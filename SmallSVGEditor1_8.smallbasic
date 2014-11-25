@@ -1,8 +1,8 @@
-' Small SVG Editor 1.8
+' Small SVG Editor 1.81
 ' Copyright (c) 2012-2014 Nonki Takahashi.  All rights reserved.
 '
 ' History:
-'  1.8  2014-11-25 Removed file operations.
+'  1.81 2014-11-25 Changed the program name.  Removed file operations.
 '  1.7b 2014-10-12 Supported grid display and changed window size. (XFZ657-16)
 '  1.6b 2013-11-20 Minor changed about shapes rotation for Silverlight.
 '  1.5b 2013-03-30 Supported in remote with a browser and Silverlight. (XFZ657-15)
@@ -24,7 +24,7 @@
 '  [ ] Check illegal behavior of formar Shapes in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
 '
-title = "Small SVG Editor 1.8"
+title = "Small SVG Editor 1.81"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -824,80 +824,6 @@ Sub ReadShapes
   shY = 0
   scale = 1
   Shapes_Add()
-EndSub
-Sub File_Open
-  ' File | Show output program to save
-  Stack.PushValue("local", cont)
-  TOPY = 80   ' top y
-  LEFTX = 25  ' left x
-  CAPTIONCOLOR = "White"
-  POPUPCOLOR = "Black"
-  TEXTCOLOR = "Black"
-  GraphicsWindow.PenWidth = 0
-  GraphicsWindow.BrushColor = POPUPCOLOR
-  oPopup = Shapes.AddRectangle(570, 310)
-  Shapes.SetOpacity(oPopup, 64)
-  Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
-  GraphicsWindow.BrushColor = CAPTIONCOLOR
-  oCaption = Shapes.AddText("Filename")
-  Shapes.Move(oCaption, LEFTX, TOPY + 2)
-  GraphicsWindow.BrushColor = TEXTCOLOR
-  oFilename = Controls.AddTextBox(LEFTX + 80, TOPY)
-  Controls.SetSize(oFilename, 300, 24)
-  oText = Controls.AddTextBox(LEFTX, TOPY + 30)
-  Controls.SetSize(oText, 550, 210)
-  oOK = Controls.AddButton("OK", LEFTX + 500, TOPY + 260)
-  Controls.ButtonClicked = File_OnButtonClicked
-  Controls.TextTyped = File_OnTextTyped
-  subname = "Shapes_Init"
-  fo_retry:
-  typed = "False"
-  cont = "True"         ' continue
-  While cont
-    If typed Then
-      filename = Controls.GetTextBoxText(oFilename)
-      buf = ""
-      Controls.SetTextBoxText(oText, buf)
-      typed = "False"
-    Else
-      Program.Delay(200)
-    EndIf
-  EndWhile
-  Controls.Remove(oCaption)
-  Controls.Remove(oFilename)
-  Controls.Remove(oText)
-  Controls.Remove(oOK)
-  Controls.Remove(oPopup)
-  cont = Stack.PopValue("local")
-EndSub
-Sub File_OnTextTyped
-  ' File | Textbox event handler
-  typed = "True"
-EndSub
-Sub ReadShapesDummy
-  ' This subroutine is a dummy.  You should replace this routine from
-  ' Subroutines 1.7b (GTV460-1).
-  TOPY = 80   ' top y
-  LEFTX = 25  ' left x
-  CAPTIONCOLOR = "White"
-  POPUPCOLOR = "Black"
-  TEXTCOLOR = "Black"
-  GraphicsWindow.PenWidth = 0
-  GraphicsWindow.BrushColor = POPUPCOLOR
-  oPopup = Shapes.AddRectangle(570, 310)
-  Shapes.SetOpacity(oPopup, 64)
-  Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
-  GraphicsWindow.BrushColor = CAPTIONCOLOR
-  oText = Shapes.AddText("This [Open] dialog is a dummy. You should replace a subroutine ReadShapes() from" + CRLF + "Subroutines 1.7b (GTV460-1).")
-  Shapes.Move(oText, LEFTX, TOPY + 30)
-  GraphicsWindow.BrushColor = TEXTCOLOR
-  oOK = Controls.AddButton("OK", LEFTX + 500, TOPY + 260)
-  While Controls.LastClickedButton <> oOK
-      Program.Delay(200)
-  EndWhile
-  Controls.Remove(oText)
-  Controls.Remove(oOK)
-  Controls.Remove(oPopup)
 EndSub
 Sub RegisterShapeData
   ' param i - index of shapes
@@ -1876,29 +1802,86 @@ Sub CS_OnButtonClicked
     cancel = "False"
   EndIf
 EndSub
+Sub File_Open
+  ' File | Show output program to save
+  Stack.PushValue("local", cont)
+  TOPY = 10   ' top y
+  LEFTX = 10  ' left x
+  CAPTIONCOLOR = "Black"
+  POPUPCOLOR = "LightGray"
+  TEXTCOLOR = "Black"
+  OPACITY = 70
+  GraphicsWindow.PenWidth = 0
+  GraphicsWindow.BrushColor = POPUPCOLOR
+  oPopup = Shapes.AddRectangle(gw, gh)
+  Shapes.SetOpacity(oPopup, 64)
+  Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
+  GraphicsWindow.BrushColor = CAPTIONCOLOR
+  oCaption = Shapes.AddText("Filename")
+  Shapes.Move(oCaption, LEFTX, TOPY + 4)
+  GraphicsWindow.BrushColor = TEXTCOLOR
+  oFilename = Controls.AddTextBox(LEFTX + 80, TOPY)
+  Shapes.SetOpacity(oFilename, OPACITY)
+  Controls.SetSize(oFilename, 300, 24)
+  oText = Controls.AddTextBox(LEFTX, TOPY + 30)
+  Controls.SetSize(oText, gw - 20, gh - 84)
+  Shapes.SetOpacity(oText, OPACITY)
+  oOK = Controls.AddButton("OK", gw - 40, gh - 34)
+  Controls.ButtonClicked = File_OnButtonClicked
+  Controls.TextTyped = File_OnTextTyped
+  subname = "Shapes_Init"
+  fo_retry:
+  typed = "False"
+  cont = "True"         ' continue
+  While cont
+    If typed Then
+      filename = Program.Directory + "\" + Controls.GetTextBoxText(oFilename)
+      buf = ""
+      buf = File.ReadContents(filename)
+      Controls.SetTextBoxText(oText, buf)
+      typed = "False"
+    Else
+      Program.Delay(200)
+    EndIf
+  EndWhile
+  Controls.Remove(oCaption)
+  Controls.Remove(oFilename)
+  Controls.Remove(oText)
+  Controls.Remove(oOK)
+  Controls.Remove(oPopup)
+  cont = Stack.PopValue("local")
+EndSub
+Sub File_OnTextTyped
+  ' File | Textbox event handler
+  If Controls.LastTypedTextBox = oFilename Then
+    typed = "True"
+  EndIf
+EndSub
 Sub File_Save
   ' File | Show output program to save
   ' param buf - program buffer
   ' define constant
   Stack.PushValue("local", cont)
-  TOPY = 80   ' top y
-  LEFTX = 25  ' left x
-  POPUPCOLOR = "Black"
+  TOPY = 10   ' top y
+  LEFTX = 10  ' left x
+  POPUPCOLOR = "LightGray"
   TEXTCOLOR = "Black"
-  CAPTIONCOLOR = "White"
+  CAPTIONCOLOR = "Black"
+  OPACITY = 70
   GraphicsWindow.PenWidth = 0
   GraphicsWindow.BrushColor = POPUPCOLOR
-  oPopup = Shapes.AddRectangle(570, 310)
-  Shapes.SetOpacity(oPopup, 64)
+  oPopup = Shapes.AddRectangle(gw, gh)
+  Shapes.SetOpacity(oPopup, OPACITY)
   Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
   GraphicsWindow.BrushColor = TEXTCOLOR
   oText = Controls.AddTextBox(LEFTX, TOPY)
-  Controls.SetSize(oText, 550, 240)
+  Controls.SetSize(oText, gw - 20, gh - 50)
+  Shapes.SetOpacity(oText, OPACITY)
   Controls.SetTextBoxText(oText, buf)
-  oOK = Controls.AddButton("OK", LEFTX + 500, TOPY + 260)
+  oOK = Controls.AddButton("OK", gw - 40, gh - 34)
   GraphicsWindow.BrushColor = CAPTIONCOLOR
   oMsg = Shapes.AddText("Click textbox above, push Ctrl+A, Ctrl+C to copy and save to your editor")
-  Shapes.Move(oMsg, LEFTX, TOPY + 260)
+  Shapes.Move(oMsg, LEFTX, gh - 28)
   cont = "True"         ' continue
   Controls.ButtonClicked = File_OnButtonClicked
   While cont
@@ -2466,3 +2449,4 @@ Sub Slider_SetLevel
   slider[iSlider]["y3"] = y0 + 18
   width = Stack.PopValue("local")
 EndSub
+  
