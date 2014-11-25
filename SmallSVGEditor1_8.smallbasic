@@ -1,30 +1,19 @@
-' Small SVG Editor 1.81
-' Copyright (c) 2012-2014 Nonki Takahashi.  All rights reserved.
+' Small SVG Editor
+' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
+' Version 1.82
+' Last update 2014-11-25
 '
 ' History:
-'  1.81 2014-11-25 Changed the program name.  Removed file operations.
-'  1.7b 2014-10-12 Supported grid display and changed window size. (XFZ657-16)
-'  1.6b 2013-11-20 Minor changed about shapes rotation for Silverlight.
-'  1.5b 2013-03-30 Supported in remote with a browser and Silverlight. (XFZ657-15)
-'  1.42 2012-10-16 Minor bug fixed - open message remains. (TLW744-3)
-'  1.41 2012-10-16 Minor bug fixed - line rotated. (TLW744-1)
-'  1.4 2012-10-16 Supported cursor keys and new UI for shapes menu. (XFZ657-14)
-'  1.31 2012-09-20 Minor bug fixed - pinches removed at consecutive shapes addition. (TLW744-0)
-'  1.3 2012-09-20 Supported palette loading , consecutive shapes addition and (2). (XFZ657-13)
-'  1.2 2012-09-20 Bug fixed (1) and supported short cut keys. (XFZ657-12)
-'  1.12 2012-09-18 Bug fixed (select line from file). (XFZ657-11)
-'  1.1 2012-09-18 Supported file input. (TLW744)
-'  1.0 2012-19-15 Supported copy and paste. (XFZ657-10)
-'
-' Bug fix:
-'  (1) No rotation frame after paste
-'  (2) Pinches came under a shape after pen or brush color change
+'  Created from Shapes 1.7b.
+'  Changed Open/Save popup design.
 '
 ' TODO:
-'  [ ] Check illegal behavior of formar Shapes in Silverlight environment
+'  [ ] Check illegal behavior in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
+'  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes/WriteShapes
+'  [ ] Sort subroutines
 '
-title = "Small SVG Editor 1.81"
+title = "Small SVG Editor 1.82"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -744,8 +733,6 @@ Sub NormalizePos
   _mxM = Math.Floor(x)
   _myM = Math.Floor(y)
 EndSub
-' Subroutines 1.7b (GTV460-1)
-' These subroutines are for Shapes 1.7b.
 Sub ReadShapes
   File_Open()
   ' Parse "shX = ..."
