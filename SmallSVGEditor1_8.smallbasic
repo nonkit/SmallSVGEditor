@@ -1,26 +1,31 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.84b
+' Version 1.85b
 ' Repository https://github.com/nonkit/SmallSVGEditor
-' Program ID XFZ657-18
+' Program ID TLW744-4
 ' Last update 2014-11-26
 '
 ' History:
 '  - Created from Shapes 1.7b.
 '  - Changed Open/Save/Color popup design.
-'  - Supported SVG (only) for Save
+'  - Supported SVG (only) for Save.
 '
 ' TODO:
 '  [ ] Check illegal behavior in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
 '  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
 '  [ ] Sort subroutines
-'  [✔] Bug fix for Silverlight:  hanging at color selector popup
-'  [ ] Bug fix for Silverlight:  Save icon not displayed
-'  [✔] Support to paste into multiline text box
-'  [ ] Refine grid graphics
+'  [✔] Bug fix for Silverlight:  Save icon not displayed
+'  [ ] Bug fix for Silverlight:  Paste icon not displayed
+'  [ ] Bug fix for Silverlight:  Lines come different place
+'  [ ] Bug fix for Silverlight:  Lines move after click
+'  [ ] Bug fix for Silverlight:  Rotated triangles move after click
+'  [ ] Bug fix for Silverlight:  SVG has fraction numbers
+'  [ ] Bug fix for Silverlight:  SVG has color #FFrrggbb
+'  [✔] Bug fix for Silverlight:  Color popup shows #FFrrggbb
+'  [✔] Refine grid graphics
 '
-title = "Small SVG Editor 1.84b"
+title = "Small SVG Editor 1.85b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -410,6 +415,14 @@ Sub DoMenu                        ' if a menu item clicked do the funciton
     ElseIf func = "gr" Then       ' grid
       grid = Not[grid]
       If grid Then
+        colorGrid = "#EEEEEE"
+        stepGrid = 10
+        DrawGrid()
+        colorGrid = "#AAAAAA"
+        stepGrid = 50
+        DrawGrid()
+        colorGrid = "#666666"
+        stepGrid = 100
         DrawGrid()
       Else
         GraphicsWindow.BrushColor = "White"
@@ -517,25 +530,14 @@ Sub DoShape                     ' if a shape clicked then move it
   EndIf
 EndSub
 Sub DrawGrid
+  ' param colorGrid - color for grid
+  ' param stepGrid - step for grid
   GraphicsWindow.PenWidth = 1
-  For x = 0 To gw - 1 Step 10
-    If Math.Remainder(x, 100) = 0 Then
-      GraphicsWindow.PenColor = "#666666"
-    ElseIf Math.Remainder(x, 50) = 0 Then
-      GraphicsWindow.PenColor = "#AAAAAA"
-    Else
-      GraphicsWindow.PenColor = "#EEEEEE"
-    EndIf
+  GraphicsWindow.PenColor = colorGrid
+  For x = 0 To gw - 1 Step stepGrid
     GraphicsWindow.DrawLine(x, sizeMenu + 20, x, gh)
   EndFor
-  For y = sizeMenu + 20 To gh - 1 Step 10
-    If Math.Remainder(y, 100) = 0 Then
-      GraphicsWindow.PenColor = "#666666"
-    ElseIf Math.Remainder(y, 50) = 0 Then
-      GraphicsWindow.PenColor = "#AAAAAA"
-    Else
-      GraphicsWindow.PenColor = "#EEEEEE"
-    EndIf
+  For y = sizeMenu + 20 To gh - 1 Step stepGrid
     GraphicsWindow.DrawLine(0, y, gw, y)
   EndFor
 EndSub
@@ -619,11 +621,13 @@ Sub DrawMenuItem
     icopy = i                   ' for short cut key
     menu[i]["func"] = "copy"
     GraphicsWindow.DrawImage(url + "copy.png", x, y)
+    Program.Delay(msWait)       ' ? for Silverlight
     itemname[i] = "Copy"
   ElseIf i = 5 Then
     ipaste = i                  ' for short cut key
     menu[i]["func"] = "paste"
     GraphicsWindow.DrawImage(url + "paste.png", x, y)
+    Program.Delay(msWait)       ' ? for Silverlight
     itemname[i] = "Paste"
   ElseIf i = 6 Then
     menu[i]["func"] = "rect"
@@ -1590,7 +1594,13 @@ Sub CS_InitPalette
   ' Color Selector | Initialize palette
   ' This subroutine should be called before CS_ShowPopup().
   pcolor = GraphicsWindow.PenColor
+  If Text.GetLength(pcolor) = 9 Then      ' for Silverlight
+    pcolor = "#" + Text.GetSubText(pcolor, 4, 6)
+  EndIf
   bcolor = GraphicsWindow.BrushColor
+  If Text.GetLength(bcolor) = 9 Then      ' for Silverlight
+    bcolor = "#" + Text.GetSubText(bcolor, 4, 6)
+  EndIf
   maxPalette = 16 ' max cell number of palette
   nPalette = 2    ' number of palette in use
   tPalette = 3    ' index of update target cell
@@ -1696,9 +1706,9 @@ Sub CS_ShowPopup
   oRect = ""            ' keep current color
   'GraphicsWindow.SetPixel(0, 0, colorInit)
   'color = GraphicsWindow.GetPixel(0, 0)
-  'If Text.GetLength(color) = 9 Then       ' for Silverlight
-  '  color = "#" + Text.GetSubText(color, 4, 6)
-  'EndIf
+  If Text.GetLength(color) = 9 Then       ' for Silverlight
+    color = "#" + Text.GetSubText(color, 4, 6)
+  EndIf
   'GraphicsWindow.SetPixel(0, 0, "LightGray")
   GraphicsWindow.BrushColor = CAPTIONCOLOR
   oColor = Shapes.AddText(colorInit)
@@ -1994,8 +2004,8 @@ EndSub
 Sub Mouse_OnDown
   ' Mouse | Common event handler on mouse down
   ' return mxD, myD - position on mouse down
-  mxD = GraphicsWindow.MouseX
-  myD = GraphicsWindow.MouseY
+  mxD = Math.Floor(GraphicsWindow.MouseX)
+  myD = Math.Floor(GraphicsWindow.MouseY)
   clicked = "True"
   released = "False"
   If debug Then
@@ -2008,8 +2018,8 @@ EndSub
 Sub Mouse_OnMove
   ' Mouse | Common event handler on mouse move
   ' return mxM, myM - position on mouse move
-  mxM = GraphicsWindow.MouseX
-  myM = GraphicsWindow.MouseY
+  mxM = Math.Floor(GraphicsWindow.MouseX)
+  myM = Math.Floor(GraphicsWindow.MouseY)
   moved = "True"
   If debug Then
     smrc = " moved " + mxM + "," + myM
@@ -2033,8 +2043,8 @@ EndSub
 Sub Mouse_OnUp
   ' Mouse | Common event handler on mouse up
   ' return mxU, myU - position on mouse up
-  mxU = GraphicsWindow.MouseX
-  myU = GraphicsWindow.MouseY
+  mxU = Math.Floor(GraphicsWindow.MouseX)
+  myU = Math.Floor(GraphicsWindow.MouseY)
   released = "True"
   If debug Then
     smrc = " released " + mxU + "," + myU
@@ -2196,7 +2206,7 @@ Sub Shapes_Add
       shape[i]["wy"] = y
     EndIf
     Shapes.Move(shape[i]["obj"], shX + x * s, shY + y * s)
-    If Text.IsSubText("rect|ell|tri|text", shape[i]["func"]) And shape[i]["angle"] <> 0 Then
+    If Text.IsSubText("rect|ell|tri|text", shape[i]["func"]) And (shape[i]["angle"] <> 0) And (shape[i]["angle"] <> "") Then
       Shapes.Rotate(shape[i]["obj"], shape[i]["angle"])
     EndIf
   EndFor
