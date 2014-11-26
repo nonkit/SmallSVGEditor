@@ -1,8 +1,8 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.83b
+' Version 1.84b
 ' Repository https://github.com/nonkit/SmallSVGEditor
-' Program ID XZF567-17
+' Program ID XFZ657-18
 ' Last update 2014-11-26
 '
 ' History:
@@ -14,11 +14,13 @@
 '  [ ] Check illegal behavior in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
 '  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
-'  [✔] Change file format from .sb (.smallbasic) to .svg in WriteShapes
 '  [ ] Sort subroutines
-'  [ ] Bug fix:  hanging at color selector popup
+'  [✔] Bug fix for Silverlight:  hanging at color selector popup
+'  [ ] Bug fix for Silverlight:  Save icon not displayed
+'  [✔] Support to paste into multiline text box
+'  [ ] Refine grid graphics
 '
-title = "Small SVG Editor 1.83b"
+title = "Small SVG Editor 1.84b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -590,6 +592,7 @@ Sub DrawMenuItem
   ElseIf i = 2 Then
     menu[i]["func"] = "save"
     GraphicsWindow.DrawImage(url + "save.png", x, y)
+    Program.Delay(msWait)       ' ? for Silverlight
     itemname[i] = "Save"
   ElseIf i = 3 Then
     icut = i                    ' for short cut key
@@ -1185,30 +1188,36 @@ Sub WriteShapes
   For i = 1 To nShapes
     If shape[i]["func"] = "rect" Then
       buf = buf + "  " + LT + "rect "
-      buf = buf + "x=" + WQ + shape[i]["x"] + WQ + " "
-      buf = buf + "y=" + WQ + shape[i]["y"] + WQ + " "
-      buf = buf + "width=" + WQ + shape[i]["width"] + WQ + " "
-      buf = buf + "height=" + WQ + shape[i]["height"] + WQ + " "
+      buf = buf + "x=" + WQ + Math.Floor(shape[i]["x"] + shape[i]["pw"] / 2) + WQ + " "
+      buf = buf + "y=" + WQ + Math.Floor(shape[i]["y"] + shape[i]["pw"] / 2) + WQ + " "
+      buf = buf + "width=" + WQ + (shape[i]["width"] - shape[i]["pw"]) + WQ + " "
+      buf = buf + "height=" + WQ + (shape[i]["height"] - shape[i]["pw"]) + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
+        buf = buf + CRLF + "    "
         buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + Math.Floor(shape[i]["width"] / 2) + " "
-        buf = buf + Math.Floor(shape[i]["height"] / 2) + ")" + WQ + " "
+        buf = buf + Math.Floor(shape[i]["width"] / 2 + shape[i]["x"]) + " "
+        buf = buf + Math.Floor(shape[i]["height"] / 2 + shape[i]["y"]) + ")" + WQ + " "
       EndIf
-      buf = buf + "style=" + WQ + "fill:" + shape[i]["bc"] + ";"
+      buf = buf + CRLF + "    "
+      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
     ElseIf shape[i]["func"] = "ell" Then
       buf = buf + "  " + LT + "ellipse "
-      rx = Math.Floor(shape[i]["width"] / 2)
-      ry = Math.Floor(shape[i]["height"] / 2)
-      buf = buf + "cx=" + WQ + (shape[i]["x"] + rx) + WQ + " "
-      buf = buf + "cy=" + WQ + (shape[i]["y"] + ry) + WQ + " "
+      cx = Math.Floor(shape[i]["width"] / 2 + shape[i]["x"])
+      cy = Math.Floor(shape[i]["height"] / 2 + shape[i]["y"])
+      rx = Math.Floor((shape[i]["width"] - shape[i]["pw"]) / 2)
+      ry = Math.Floor((shape[i]["height"] - shape[i]["pw"]) / 2)
+      buf = buf + "cx=" + WQ + cx + WQ + " "
+      buf = buf + "cy=" + WQ + cy + WQ + " "
       buf = buf + "rx=" + WQ + rx + WQ + " "
       buf = buf + "ry=" + WQ + ry + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
+        buf = buf + CRLF + "    "
         buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + Math.Floor(shape[i]["width"]) / 2 + " "
-        buf = buf + Math.Floor(shape[i]["height"]) / 2 + ")" + WQ + " "
+        buf = buf + cx + " "
+        buf = buf + cy + ")" + WQ + " "
       EndIf
-      buf = buf + "style=" + WQ + "fill:" + shape[i]["bc"] + ";"
+      buf = buf + CRLF + "    "
+      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
     ElseIf shape[i]["func"] = "tri" Then
       buf = buf + "  " + LT + "polygon points=" + WQ
       buf = buf + (shape[i]["x1"] + shape[i]["x"]) + ","
@@ -1218,20 +1227,24 @@ Sub WriteShapes
       buf = buf + (shape[i]["x3"] + shape[i]["x"]) + ","
       buf = buf + (shape[i]["y3"] + shape[i]["y"]) + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
+        buf = buf + CRLF + "    "
         buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + Math.Floor(shape[i]["width"]) / 2 + " "
-        buf = buf + Math.Floor(shape[i]["height"]) / 2 + ")" + WQ + " "
+        buf = buf + (shape[i]["x1"] + shape[i]["x"]) + " "
+        buf = buf + Math.Floor((shape[i]["y2"] - shape[i]["y1"]) / 2 + shape[i]["y"]) + ")" + WQ + " "
       EndIf
-      buf = buf + "style=" + WQ + "fill:" + shape[i]["bc"] + ";"
+      buf = buf + CRLF + "    "
+      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
     ElseIf shape[i]["func"] = "line" Then
       buf = buf + "  " + LT + "line "
       buf = buf + "x1=" + WQ + (shape[i]["x1"] + shape[i]["x"]) + WQ + " "
       buf = buf + "y1=" + WQ + (shape[i]["y1"] + shape[i]["y"]) + WQ + " "
       buf = buf + "x2=" + WQ + (shape[i]["x2"] + shape[i]["x"]) + WQ + " "
       buf = buf + "y2=" + WQ + (shape[i]["y2"] + shape[i]["y"]) + WQ + " "
+      buf = buf + CRLF + "    "
+      buf = buf + "style=" + WQ
     EndIf
     If shape[i]["pw"] > 0 Then
-      buf = buf + "stroke:" + shape[i]["pc"] + ";"
+      buf = buf + "stroke:" + Text.ConvertToLowerCase(shape[i]["pc"]) + ";"
     EndIf
     buf = buf + "stroke-width:" + shape[i]["pw"] + WQ + "/>" + CRLF
   EndFor
@@ -1670,6 +1683,7 @@ Sub CS_ShowPopup
   oPopup = Shapes.AddRectangle(gw, gh)
   Shapes.SetOpacity(oPopup, 64)
   Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
+  GraphicsWindow.BrushColor = CAPTIONCOLOR
   oOK = Controls.AddButton("OK", gw - 100, gh - 34)
   oCancel = Controls.AddButton("Cancel", gw - 60, gh - 34)
   Controls.ButtonClicked = CS_OnButtonClicked
@@ -1680,19 +1694,19 @@ Sub CS_ShowPopup
   CS_DrawColorRect()    ' original color
   oRectCurrent = oRect
   oRect = ""            ' keep current color
-  GraphicsWindow.SetPixel(0, 0, colorInit)
-  color = GraphicsWindow.GetPixel(0, 0)
-  If Text.GetLength(color) = 9 Then       ' for Silverlight
-    color = "#" + Text.GetSubText(color, 4, 6)
-  EndIf
-  GraphicsWindow.SetPixel(0, 0, "LightGray")
+  'GraphicsWindow.SetPixel(0, 0, colorInit)
+  'color = GraphicsWindow.GetPixel(0, 0)
+  'If Text.GetLength(color) = 9 Then       ' for Silverlight
+  '  color = "#" + Text.GetSubText(color, 4, 6)
+  'EndIf
+  'GraphicsWindow.SetPixel(0, 0, "LightGray")
   GraphicsWindow.BrushColor = CAPTIONCOLOR
   oColor = Shapes.AddText(colorInit)
   Shapes.Move(oColor, x, y + height + 2)
-  If color <> colorInit Then
-    oColor2 = Shapes.AddText(color)
-    Shapes.Move(oColor2, x, y + height + 14)
-  EndIf
+  'If color <> colorInit Then
+  '  oColor2 = Shapes.AddText(color)
+  '  Shapes.Move(oColor2, x, y + height + 14)
+  'EndIf
   y = Stack.PopValue("local")
   CS_SetColorToSlider()
   CS_DrawColorRect()      ' draw new color rectangle
@@ -1730,7 +1744,7 @@ Sub CS_ShowPopup
   CS_RemovePalette()
   CS_RemoveSliders()
   Shapes.Remove(oColor)
-  Shapes.Remove(oColor2)
+  'Shapes.Remove(oColor2)
   Shapes.Remove(oNewColor)
   Shapes.Remove(oRectCurrent)
   Shapes.Remove(oRect)
@@ -1763,7 +1777,7 @@ Sub File_Open
   oFilename = Controls.AddTextBox(LEFTX + 80, TOPY)
   Shapes.SetOpacity(oFilename, OPACITY)
   Controls.SetSize(oFilename, 300, 24)
-  oText = Controls.AddTextBox(LEFTX, TOPY + 30)
+  oText = Controls.AddMultiLineTextBox(LEFTX, TOPY + 30)
   Controls.SetSize(oText, gw - 20, gh - 84)
   Shapes.SetOpacity(oText, OPACITY)
   oOK = Controls.AddButton("OK", gw - 40, gh - 34)
@@ -1786,6 +1800,7 @@ Sub File_Open
       Program.Delay(200)
     EndIf
   EndWhile
+  buf = Controls.GetTextBoxText(oText)
   Controls.Remove(oCaption)
   Controls.Remove(oFilename)
   Controls.Remove(oText)
@@ -1810,7 +1825,7 @@ Sub File_Save
   Shapes.SetOpacity(oPopup, OPACITY)
   Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
   GraphicsWindow.BrushColor = TEXTCOLOR
-  oText = Controls.AddTextBox(LEFTX, TOPY)
+  oText = Controls.AddMultiLineTextBox(LEFTX, TOPY)
   Controls.SetSize(oText, gw - 20, gh - 50)
   Shapes.SetOpacity(oText, OPACITY)
   Controls.SetTextBoxText(oText, buf)
@@ -2449,3 +2464,4 @@ Sub Slider_SetLevel
   slider[iSlider]["y3"] = y0 + 18
   width = Stack.PopValue("local")
 EndSub
+  
