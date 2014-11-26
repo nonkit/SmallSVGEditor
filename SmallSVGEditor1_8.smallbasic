@@ -1,19 +1,24 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.82
-' Last update 2014-11-25
+' Version 1.83b
+' Repository https://github.com/nonkit/SmallSVGEditor
+' Program ID XZF567-17
+' Last update 2014-11-26
 '
 ' History:
-'  Created from Shapes 1.7b.
-'  Changed Open/Save popup design.
+'  - Created from Shapes 1.7b.
+'  - Changed Open/Save/Color popup design.
+'  - Supported SVG (only) for Save
 '
 ' TODO:
 '  [ ] Check illegal behavior in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
-'  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes/WriteShapes
+'  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
+'  [✔] Change file format from .sb (.smallbasic) to .svg in WriteShapes
 '  [ ] Sort subroutines
+'  [ ] Bug fix:  hanging at color selector popup
 '
-title = "Small SVG Editor 1.82"
+title = "Small SVG Editor 1.83b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -24,11 +29,13 @@ GraphicsWindow.Height = gh
 Not = "False=True;True=False;"
 WQ = Text.GetCharacter(34)
 CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+LT = Text.GetCharacter(60)
 UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 LOWER = "abcdefghijkomnopqrstuvwxyz"
 DIGIT = "0123456789"
 LCHAR = UPPER + LOWER + "_"
 TCHAR = LCHAR + DIGIT
+Popup_Init()
 CS_InitPalette()          ' initialize palette for color slider
 DrawMenu()
 shape = ""
@@ -588,7 +595,7 @@ Sub DrawMenuItem
     icut = i                    ' for short cut key
     menu[i]["func"] = "cut"
     ' initialize shapes
-    Scissors_Init()
+    Shapes_Init()
     nShapes = Array.GetItemCount(shape)
     ' add shapes
     scale = 0.11
@@ -713,6 +720,31 @@ Sub ItemSelect
     height = menu[i]["_y1"] - y + 1
     GraphicsWindow.DrawRectangle(x, y, width, height)
   EndIf
+EndSub
+Sub MoveShape
+  ' param i - shape index
+  ' param _x, _y - new position of the shape
+  dx = _x - shape[i]["x"]
+  dy = _y - shape[i]["y"]
+  shape[i]["x"] = _x
+  shape[i]["y"] = _y
+  shape[i]["_x0"] = shape[i]["_x0"] + dx
+  shape[i]["_x1"] = shape[i]["_x1"] + dx
+  shape[i]["_y0"] = shape[i]["_y0"] + dy
+  shape[i]["_y1"] = shape[i]["_y1"] + dy
+  Shapes.Move(shape[i]["obj"], _x, _y)
+  If shape[i]["func"] = "line" Then
+    _iMax = 2
+  Else
+    _iMax = 5
+  EndIf
+  For _i = 1 To _iMax
+    pinch[_i]["_x0"] = pinch[_i]["_x0"] + dx
+    pinch[_i]["_x1"] = pinch[_i]["_x1"] + dx
+    pinch[_i]["_y0"] = pinch[_i]["_y0"] + dy
+    pinch[_i]["_y1"] = pinch[_i]["_y1"] + dy
+    Shapes.Move(pinch[_i]["obj"], pinch[_i]["_x0"], pinch[_i]["_y0"])
+  EndFor
 EndSub
 Sub NormalizePos
   ' param mxD, myD - fixed vertex of a shape rotated
@@ -1029,31 +1061,6 @@ Sub WaitToReleaseM ' for moving a shape
     oFrame[func] = ""
   EndIf
 EndSub
-Sub MoveShape
-  ' param i - shape index
-  ' param _x, _y - new position of the shape
-  dx = _x - shape[i]["x"]
-  dy = _y - shape[i]["y"]
-  shape[i]["x"] = _x
-  shape[i]["y"] = _y
-  shape[i]["_x0"] = shape[i]["_x0"] + dx
-  shape[i]["_x1"] = shape[i]["_x1"] + dx
-  shape[i]["_y0"] = shape[i]["_y0"] + dy
-  shape[i]["_y1"] = shape[i]["_y1"] + dy
-  Shapes.Move(shape[i]["obj"], _x, _y)
-  If shape[i]["func"] = "line" Then
-    _iMax = 2
-  Else
-    _iMax = 5
-  EndIf
-  For _i = 1 To _iMax
-    pinch[_i]["_x0"] = pinch[_i]["_x0"] + dx
-    pinch[_i]["_x1"] = pinch[_i]["_x1"] + dx
-    pinch[_i]["_y0"] = pinch[_i]["_y0"] + dy
-    pinch[_i]["_y1"] = pinch[_i]["_y1"] + dy
-    Shapes.Move(pinch[_i]["obj"], pinch[_i]["_x0"], pinch[_i]["_y0"])
-  EndFor
-EndSub
 Sub WaitToReleaseR ' for rotating a shape
   ' param i - shape index
   ' return angle - angle for rotation
@@ -1173,100 +1180,62 @@ Sub WaitToReleaseS  ' for sizing a shape
 EndSub
 Sub WriteShapes
   Stack.PushValue("local", i)
-  buf = "' "
-  buf = buf + Clock.Year + "-"
-  month = Clock.month
-  If Text.GetLength(month) = 1 Then
-    buf = buf + "0"
-  EndIf
-  buf = buf + month + "-"
-  day = Clock.Day
-  If Text.GetLength(day) = 1 Then
-    buf = buf + "0"
-  EndIf
-  buf = buf + day + " " + Clock.Time + " Shapes generated"
-  buf = buf + " by " + title + "." + CRLF
-  buf = buf + "'" + CRLF
-  buf = buf + "' initialize shapes" + CRLF
-  buf = buf + "SB_Workaround()" + CRLF
-  buf = buf + "gw = 598" + CRLF
-  buf = buf + "gh = 428" + CRLF
-  buf = buf + "GraphicsWindow.Width = gw" + CRLF
-  buf = buf + "GraphicsWindow.Height = gh" + CRLF
-  buf = buf + "Shapes_Init()" + CRLF
-  buf = buf + "' add shapes" + CRLF
-  buf = buf + "scale = 1" + CRLF
-  buf = buf + "angle = 0" + CRLF
-  buf = buf + "iMin = 1" + CRLF
-  buf = buf + "iMax = " + nShapes + CRLF
-  buf = buf + "Shapes_Add()" + CRLF
-  buf = buf + "Sub Shapes_Init" + CRLF
-  buf = buf + "  ' Shapes | Initialize shapes data" + CRLF
-  buf = buf + "  ' return shX, shY - current position of shapes" + CRLF
-  buf = buf + "  ' return shape - array of shapes" + CRLF
-  If nShapes > 0 Then
-    xmin = shape[1]["x"]
-    ymin = shape[1]["y"]
-    xmax = shape[1]["x"]
-    ymax = shape[1]["y"]
-  EndIf
-  For i = 2 To nShapes
-    If shape[i]["x"] < xmin Then
-      xmin = shape[i]["x"]
-    EndIf
-    If shape[i]["y"] < ymin Then
-      ymin = shape[i]["y"]
-    EndIf
-    If xmax < shape[i]["x"] Then
-      xmax = shape[i]["x"]
-    EndIf
-    If ymax < shape[i]["y"] Then
-      ymax = shape[i]["y"]
-    EndIf
-  EndFor
-  buf = buf + "  shX = " + xmin + " ' x offset" + CRLF
-  buf = buf + "  shY = " + ymin + " ' y offset" + CRLF
-  buf = buf + "  shape = " + WQ + WQ + CRLF
+  buf = LT + "svg width=" + WQ + gw + WQ + " "
+  buf = buf + "height=" + WQ + gh + WQ + ">" + CRLF
   For i = 1 To nShapes
-    If shape[i]["func"] = "rect" Or shape[i]["func"] = "ell" Then
-      buf = buf + "  shape[" + i + "] = " + WQ + "func=" + shape[i]["func"] + ";"
-      buf = buf + "x=" + (shape[i]["x"] - xmin) + ";"
-      buf = buf + "y=" + (shape[i]["y"] - ymin) + ";"
-      buf = buf + "width=" + shape[i]["width"] + ";"
-      buf = buf + "height=" + shape[i]["height"] + ";"
+    If shape[i]["func"] = "rect" Then
+      buf = buf + "  " + LT + "rect "
+      buf = buf + "x=" + WQ + shape[i]["x"] + WQ + " "
+      buf = buf + "y=" + WQ + shape[i]["y"] + WQ + " "
+      buf = buf + "width=" + WQ + shape[i]["width"] + WQ + " "
+      buf = buf + "height=" + WQ + shape[i]["height"] + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + "angle=" + shape[i]["angle"] + ";"
+        buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
+        buf = buf + Math.Floor(shape[i]["width"] / 2) + " "
+        buf = buf + Math.Floor(shape[i]["height"] / 2) + ")" + WQ + " "
       EndIf
-      buf = buf + "bc=" + shape[i]["bc"] + ";"
+      buf = buf + "style=" + WQ + "fill:" + shape[i]["bc"] + ";"
+    ElseIf shape[i]["func"] = "ell" Then
+      buf = buf + "  " + LT + "ellipse "
+      rx = Math.Floor(shape[i]["width"] / 2)
+      ry = Math.Floor(shape[i]["height"] / 2)
+      buf = buf + "cx=" + WQ + (shape[i]["x"] + rx) + WQ + " "
+      buf = buf + "cy=" + WQ + (shape[i]["y"] + ry) + WQ + " "
+      buf = buf + "rx=" + WQ + rx + WQ + " "
+      buf = buf + "ry=" + WQ + ry + WQ + " "
+      If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
+        buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
+        buf = buf + Math.Floor(shape[i]["width"]) / 2 + " "
+        buf = buf + Math.Floor(shape[i]["height"]) / 2 + ")" + WQ + " "
+      EndIf
+      buf = buf + "style=" + WQ + "fill:" + shape[i]["bc"] + ";"
     ElseIf shape[i]["func"] = "tri" Then
-      buf = buf + "  shape[" + i + "] = " + WQ + "func=tri;"
-      buf = buf + "x=" + (shape[i]["x"] - xmin) + ";"
-      buf = buf + "y=" + (shape[i]["y"] - ymin) + ";"
-      buf = buf + "x1=" + shape[i]["x1"] + ";"
-      buf = buf + "y1=" + shape[i]["y1"] + ";"
-      buf = buf + "x2=" + shape[i]["x2"] + ";"
-      buf = buf + "y2=" + shape[i]["y2"] + ";"
-      buf = buf + "x3=" + shape[i]["x3"] + ";"
-      buf = buf + "y3=" + shape[i]["y3"] + ";"
+      buf = buf + "  " + LT + "polygon points=" + WQ
+      buf = buf + (shape[i]["x1"] + shape[i]["x"]) + ","
+      buf = buf + (shape[i]["y1"] + shape[i]["y"]) + " "
+      buf = buf + (shape[i]["x2"] + shape[i]["x"]) + ","
+      buf = buf + (shape[i]["y2"] + shape[i]["y"]) + " "
+      buf = buf + (shape[i]["x3"] + shape[i]["x"]) + ","
+      buf = buf + (shape[i]["y3"] + shape[i]["y"]) + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + "angle=" + shape[i]["angle"] + ";"
+        buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
+        buf = buf + Math.Floor(shape[i]["width"]) / 2 + " "
+        buf = buf + Math.Floor(shape[i]["height"]) / 2 + ")" + WQ + " "
       EndIf
-      buf = buf + "bc=" + shape[i]["bc"] + ";"
+      buf = buf + "style=" + WQ + "fill:" + shape[i]["bc"] + ";"
     ElseIf shape[i]["func"] = "line" Then
-      buf = buf + "  shape[" + i + "] = " + WQ + "func=line;"
-      buf = buf + "x=" + (shape[i]["x"] - xmin) + ";"
-      buf = buf + "y=" + (shape[i]["y"] - ymin) + ";"
-      buf = buf + "x1=" + shape[i]["x1"] + ";"
-      buf = buf + "y1=" + shape[i]["y1"] + ";"
-      buf = buf + "x2=" + shape[i]["x2"] + ";"
-      buf = buf + "y2=" + shape[i]["y2"] + ";"
+      buf = buf + "  " + LT + "line "
+      buf = buf + "x1=" + WQ + (shape[i]["x1"] + shape[i]["x"]) + WQ + " "
+      buf = buf + "y1=" + WQ + (shape[i]["y1"] + shape[i]["y"]) + WQ + " "
+      buf = buf + "x2=" + WQ + (shape[i]["x2"] + shape[i]["x"]) + WQ + " "
+      buf = buf + "y2=" + WQ + (shape[i]["y2"] + shape[i]["y"]) + WQ + " "
     EndIf
     If shape[i]["pw"] > 0 Then
-      buf = buf + "pc=" + shape[i]["pc"] + ";"
+      buf = buf + "stroke:" + shape[i]["pc"] + ";"
     EndIf
-    buf = buf + "pw=" + shape[i]["pw"] + ";" + WQ + CRLF
+    buf = buf + "stroke-width:" + shape[i]["pw"] + WQ + "/>" + CRLF
   EndFor
-  buf = buf + "EndSub" + CRLF
+  buf = buf + LT + "/svg>" + CRLF
   File_Save()
   i = Stack.PopValue("local")
 EndSub
@@ -1695,24 +1664,14 @@ Sub CS_ShowPopup
   ' define constant
   Stack.PushValue("local", cont)
   colorInit = color           ' initial color
-  TOPY = 80   ' top y
-  LEFTX = 25  ' left x
-  BORDERCOLOR = "#666666"
-  BOXCOLOR = "LightGray"
-  CAPTIONCOLOR = "White"
-  DELTAY = 36 ' delta y
-  SLITCOLOR = "#555555"
-  TEXTCOLOR = "Black"
-  UNDEFINED = "N/A"
-  POPUPCOLOR = "Black"
   GraphicsWindow.PenWidth = 2
   GraphicsWindow.PenColor = POPUPCOLOR
   GraphicsWindow.BrushColor = POPUPCOLOR
-  oPopup = Shapes.AddRectangle(570, 310)
+  oPopup = Shapes.AddRectangle(gw, gh)
   Shapes.SetOpacity(oPopup, 64)
   Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
-  oOK = Controls.AddButton("OK", LEFTX + 440, TOPY + 260)
-  oCancel = Controls.AddButton("Cancel", LEFTX + 480, TOPY + 260)
+  oOK = Controls.AddButton("OK", gw - 100, gh - 34)
+  oCancel = Controls.AddButton("Cancel", gw - 60, gh - 34)
   Controls.ButtonClicked = CS_OnButtonClicked
   CS_Init()
   Stack.PushValue("local", y)
@@ -1792,12 +1751,6 @@ EndSub
 Sub File_Open
   ' File | Show output program to save
   Stack.PushValue("local", cont)
-  TOPY = 10   ' top y
-  LEFTX = 10  ' left x
-  CAPTIONCOLOR = "Black"
-  POPUPCOLOR = "LightGray"
-  TEXTCOLOR = "Black"
-  OPACITY = 70
   GraphicsWindow.PenWidth = 0
   GraphicsWindow.BrushColor = POPUPCOLOR
   oPopup = Shapes.AddRectangle(gw, gh)
@@ -1817,14 +1770,16 @@ Sub File_Open
   Controls.ButtonClicked = File_OnButtonClicked
   Controls.TextTyped = File_OnTextTyped
   subname = "Shapes_Init"
-  fo_retry:
   typed = "False"
   cont = "True"         ' continue
   While cont
     If typed Then
-      filename = Program.Directory + "\" + Controls.GetTextBoxText(oFilename)
+      filename = Controls.GetTextBoxText(oFilename)
+      If Not[Text.IsSubText(filename, ":")] And Not[Text.IsSubText(filename, "\")] Then
+        filename = Program.Directory + "\" + filename
+      EndIf
       buf = ""
-      buf = File.ReadContents(filename)
+      SB_AppendSub()
       Controls.SetTextBoxText(oText, buf)
       typed = "False"
     Else
@@ -1849,12 +1804,6 @@ Sub File_Save
   ' param buf - program buffer
   ' define constant
   Stack.PushValue("local", cont)
-  TOPY = 10   ' top y
-  LEFTX = 10  ' left x
-  POPUPCOLOR = "LightGray"
-  TEXTCOLOR = "Black"
-  CAPTIONCOLOR = "Black"
-  OPACITY = 70
   GraphicsWindow.PenWidth = 0
   GraphicsWindow.BrushColor = POPUPCOLOR
   oPopup = Shapes.AddRectangle(gw, gh)
@@ -2076,6 +2025,70 @@ Sub Mouse_OnUp
     smrc = " released " + mxU + "," + myU
   EndIf
 EndSub
+Sub Popup_Init
+  TOPY = 10   ' top y
+  LEFTX = 10  ' left x
+  DELTAY = 36 ' delta y
+  OPACITY = 70
+  POPUPCOLOR = "LightGray"
+  CAPTIONCOLOR = "Black"
+  TEXTCOLOR = "Black"
+  BORDERCOLOR = "#666666"
+  BOXCOLOR = "LightGray"
+  SLITCOLOR = "#555555"
+  UNDEFINED = "N/A"
+EndSub
+Sub SB_AppendSub
+  ' Small Basic | Append subroutine from Small Basic source file
+  ' param filename - file name
+  ' param subname - subroutine name
+  ' return buf - subroutine buffer
+  len = Text.GetLength(subname)
+  _buf = "" ' for Slilverlight
+  _buf = File.ReadContents(filename)
+  ptr = 1
+  notFound = "True"
+  While notFound
+    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(_buf, ptr), "Sub")
+    If _ptr = 0 Then
+      _buf = ""
+      Goto sbas_exit
+    EndIf
+    ptrSub = ptr + _ptr - 1
+    ptr = ptrSub + 3
+    While Text.GetSubText(_buf, ptr, 1) = " "
+      ptr = ptr + 1
+    EndWhile
+    If Text.GetSubText(_buf, ptr, len) = subname And Text.IsSubText(TCHAR, Text.GetSubText(_buf, ptr + len, 1)) = "False" Then
+      notFound = "False"
+    EndIf
+  EndWhile
+  _ptre = _ptr - 1
+  _ptrq = _ptr
+  While (0 < _ptrq) And (_ptre < _ptrq) ' EOL exists before single quote (comment)
+    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(_buf, ptr), "EndSub")
+    If _ptr = 0 Then
+      buf = ""
+      Goto sbas_exit
+    EndIf
+    _ptre = ptr + _ptr - 3
+    While (1 <= _ptre) And (Text.GetSubText(_buf, _ptre, 2) <> CRLF)
+      _ptre = _ptre - 1
+    EndWhile
+    _ptrq = ptr + _ptr - 2
+    While (1 <= _ptrq) And (Text.GetSubText(_buf, _ptrq, 1) <> "'")
+      _ptrq = _ptrq - 1
+    EndWhile
+    If (0 < _ptrq) And (_ptre < _ptrq) Then
+      ptr = ptr + _ptr + 5
+    EndIf
+  EndWhile
+  ptrEndSub = ptr + _ptr - 1
+  ptr = ptrEndSub + 6
+  len = ptr - ptrSub
+  buf = buf + Text.GetSubText(_buf, ptrSub, len)
+  sbas_exit:
+EndSub
 Sub SB_RotateWorkaround
   ' Small Basic | Rotate workaround for Silverlight
   ' param x, y - original coordinate
@@ -2104,7 +2117,7 @@ Sub SB_Workaround
     silverlight = "False"
   EndIf
 EndSub
-Sub Scissors_Init
+Sub Shapes_Init
   ' Scissors | Initialize shapes data for menu icon
   ' return shX, shY - current position of shapes
   ' return shape - array of shapes
@@ -2436,4 +2449,3 @@ Sub Slider_SetLevel
   slider[iSlider]["y3"] = y0 + 18
   width = Stack.PopValue("local")
 EndSub
-  
