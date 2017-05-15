@@ -1,11 +1,11 @@
 Module SmallSVGEditorModule
-    Dim title, debug, gw, gh, __Not, WQ, qt, CR, LF, LT, UPPER, LOWER, DIGIT, LCHAR, TCHAR, shape, nShapes, cont, param, clicked, __in, out, c, obj, icut, icopy, ipaste, selectedshape, i, __select, shp, _x, arrow_dx, _y, arrow_dy, x, y, a, cx, cy, len, width, height, angle, mxM, myM, mxD, myD, _i, nPinch, pnch, pinch, r, nMenu, mnu, menu, func, selecteditem, mode, repeat, clipboard, index, iMin, iMax, scale, shX, shY, resize, w, h, bcolor, pwidth, pcolor, xt, xmin, ymin, x1, x2, y1, y2, pen, nPen, pw, size, color, grid, colorGrid, stepGrid, sizeMenu, fromMenu, cxMenu, cyMenu, xMenu, yMenu, imenubar, margin, url, itemname, msWait, t, x3, y3, oItem, dx, dy, _iMax, _mxD, _myD, _mxM, _myM, p, match, mxU, myU, xmax, ymax, sizePinch, shWidth, shHeight, xPinch, yPinch, shAngle, moved, released, oFrame, _x1, _y1, _x2, _y2, _x3, _y3, sp, buf, rx, ry, sR, sColor, sG, sB, sHex, iR, iDec, iG, iB, rLightness, rN2, rSaturation, rN1, rH, rHue, iValue, rR, rG, rB, rMax, rMin, UNDEFINED, rRC, rGC, rBC, rV, nPalette, pltt, palette, tPalette, maxPalette, iSlider, iHue, iLightness, iSaturation, level, iRed, iGreen, iBlue, red, green, blue, iPalette, BORDERCOLOR, oRect, min, max, left, top, TOPY, caption, DELTAY, LEFTX, CAPTIONCOLOR, oNewColor, numSlider, slider, oPalette, sldr, colorInit, POPUPCOLOR, oPopup, oOK, oCancel, oCaption, oRectCurrent, oColor, cancel, TEXTCOLOR, oFilename, OPACITY, oText, fifok, oMsg, subname, typed, filename, fifos, fifoc, _shift, _ctrl, keys, shift, ctrl, key, iLen, iPtr, cmr, _p, handler, pc, bc, attr, dmu, smrc, pSave, tag, findNext, pTag, lTag, pAttr, lAttr, pEnd, pEq, pQ, txt, pL, pR, pKw, pStyle, kw, value, pValue, pColon, isSpace, __char, BOXCOLOR, SLITCOLOR, ox, oy, alpha, silverlight, s, fs, _cx, _cy, mag, x0, x0_, x1_, y0 As Primitive
+    Dim title, debug, gw, gh, __Not, WQ, qt, CR, LF, LT, UPPER, LOWER, DIGIT, LCHAR, TCHAR, shape, nShapes, cont, param, clicked, __in, out, c, obj, icut, icopy, ipaste, selectedshape, i, __select, shp, _x, arrow_dx, _y, arrow_dy, x, y, a, cx, cy, len, width, height, angle, mxM, myM, mxD, myD, _i, nPinch, pnch, pinch, r, nMenu, mnu, menu, func, selecteditem, mode, repeat, clipboard, index, iMin, iMax, scale, shX, shY, resize, w, h, bcolor, pwidth, pcolor, xt, xmin, ymin, x1, x2, y1, y2, pen, nPen, pw, size, color, grid, colorGrid, stepGrid, sizeMenu, fromMenu, cxMenu, cyMenu, xMenu, yMenu, imenubar, margin, url, itemname, msWait, t, x3, y3, oItem, dx, dy, _iMax, _mxD, _myD, _mxM, _myM, p, match, mxU, myU, xmax, ymax, sizePinch, shWidth, shHeight, xPinch, yPinch, shAngle, moved, released, oFrame, _x1, _y1, _x2, _y2, _x3, _y3, sp, buf, rx, ry, sR, sColor, sG, sB, sHex, iR, iDec, iG, iB, rLightness, rN2, rSaturation, rN1, rH, rHue, iValue, rR, rG, rB, rMax, rMin, UNDEFINED, rRC, rGC, rBC, rV, nPalette, pltt, palette, tPalette, maxPalette, iSlider, iHue, iLightness, iSaturation, level, iRed, iGreen, iBlue, red, green, blue, iPalette, BORDERCOLOR, oRect, min, max, left, top, TOPY, caption, DELTAY, LEFTX, CAPTIONCOLOR, oNewColor, numSlider, slider, oPalette, sldr, colorInit, POPUPCOLOR, oPopup, oOK, oCancel, oCaption, oRectCurrent, oColor, cancel, TEXTCOLOR, oFilename, OPACITY, oText, fifok, oMsg, subname, typed, filename, fifos, fifoc, _shift, _ctrl, keys, shift, ctrl, key, iLen, iPtr, cmr, attr, handler, lAngle, _p, pAngle, dmu, smrc, pc, bc, pSave, tag, findNext, pTag, lTag, pAttr, lAttr, pEnd, pEq, pQ, txt, pL, pR, pKw, pStyle, kw, value, pValue, pColon, points, px, py, nPoints, pPoints, isSpace, __char, BOXCOLOR, SLITCOLOR, ox, oy, alpha, silverlight, s, fs, _cx, _cy, mag, x0, x0_, x1_, y0 As Primitive
     Sub Main()
         ' Small SVG Editor
         ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-        ' Version 1.96b
+        ' Version 1.97b
         ' Repository https://git01.codeplex.com/smallsvgeditor
-        ' Last update 2014-12-01
+        ' Last update 2014-12-20
         ' Program ID TLW744-6
         '
         ' History:
@@ -14,17 +14,22 @@ Module SmallSVGEditorModule
         '  - Supported SVG for Open/Save.
         '
         ' TODO:
-        '  [✔] Support grouping tag (element), defs tag and use tag
-        '  [ ] Support text tag (element)
-        '  [✔] Change file format from .sb (.smallbasic) to .svg in ReadShapes
-        '  [ ] Check illegal behavior in Silverlight environment
-        '  [ ] Refine to avoid Publish error (too large)
-        '  [ ] Sort subroutines
-        '  [ ] Bug fix for Silverlight:  Lines come different place
-        '  [ ] Bug fix for Silverlight:  Lines move after click
-        '  [ ] Bug fix for Silverlight:  Rotated triangles move after click
+        '  [✔] #4 Support grouping tag (element), defs tag and use tag
+        '  [✔] #1 Change file format from .sb (.smallbasic) to .svg in ReadShapes
+        '  [✔] #11 Support rotation in ReadShapes
+        '  [ ] #10 Support text tag (element)
+        '  [ ] #7 Support both .sb and .svg format in ReadShapes/WriteShapes
+        '  [ ] #9 Check illegal behavior in Silverlight environment
+        '  [ ] #8 Sort subroutines
+        '  [✔] #6 Bug fix: ReadShapes creates a shape cannot be moved
+        '  [✔] Bug fix: ReadShapes cannot create a triangle
+        '  [✔] #13 Bug fix: ReadShapes cannot create a shape at second time
+        '  [✔] #12 Bug fix: ReadShapes creates some of shapes cannot be moved
+        '  [ ] #2 Bug fix for Silverlight:  Lines come different place
+        '  [ ] #3 Bug fix for Silverlight:  Lines move after click
+        '  [ ] #3 Bug fix for Silverlight:  Rotated triangles move after click
         '
-        title = "Small SVG Editor 1.96b"
+        title = "Small SVG Editor 1.97b"
         GraphicsWindow.Title = title
         debug = false
         SB_Workaround()
@@ -37,7 +42,7 @@ Module SmallSVGEditorModule
         qt = WQ
         CR = Text.GetCharacter(13)
         LF = Text.GetCharacter(10)
-        LT = Text.GetCharacter(60)
+        LT = "<"
         UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         LOWER = "abcdefghijkomnopqrstuvwxyz"
         DIGIT = "0123456789"
@@ -739,6 +744,13 @@ dm_exit:
         GraphicsWindow.FontBold = true
         GraphicsWindow.FontSize = 12
     End Sub
+    Sub DumpShape()
+        TextWindow.WriteLine("shX=" + shX)
+        TextWindow.WriteLine("shY=" + shY)
+        For SmallSVGEditorModule.i = 1 To nShapes
+            TextWindow.WriteLine("shape[" + i + "]:" + shape(i))
+        Next
+    End Sub
     Sub ItemSelect()
         ' i - menu index
         ' select - "True" if selected
@@ -809,8 +821,8 @@ dm_exit:
         File_Open()
         ' param buf - SVG buffer
         scale = 1
-        iMin = 1
-        iMax = 0
+        iMin = nShapes + 1
+        iMax = nShapes
         p = 1
         Parse_Header()
         Parse_Space()
@@ -844,6 +856,7 @@ dm_exit:
                 End If
             End If
         End While
+        nShapes = iMax
         Parse_Use()
         Shapes_Add()
     End Sub
@@ -1295,7 +1308,7 @@ dm_exit:
         Next
         buf = buf + sp(4) + LT + "/g>" + CR + LF
         buf = buf + "  " + LT + "/defs>" + CR + LF
-        buf = buf + "  " + LT + "use x=" + xmin + " y=" + ymin + " xlink:href=" + WQ + "#g1" + WQ + " />" + CR + LF
+        buf = buf + "  " + LT + "use x=" + WQ + xmin + WQ + " y=" + WQ + ymin + WQ + " xlink:href=" + WQ + "#g1" + WQ + " />" + CR + LF
         buf = buf + LT + "/svg>" + CR + LF
         File_Save()
         i = Stack.PopValue("local")
@@ -2107,6 +2120,16 @@ scco_obj_found:
             smrc = " released " + mxU + "," + myU
         End If
     End Sub
+    Sub Parse_Angle()
+        ' param attr["transform"] - transform attribute in tag
+        ' return angle - angle
+        angle = ""
+        If attr("transform") <> CType("", Primitive) Then
+            pAngle = 8
+            lAngle = Text.GetIndexOf(Text.GetSubTextToEnd(attr("transform"), pAngle), " ") - 1
+            angle = Text.GetSubText(attr("transform"), pAngle, lAngle)
+        End If
+    End Sub
     Sub Parse_Defs()
         ' param buf - SVG buffer
         ' param p - pointer to SVG buffer
@@ -2135,23 +2158,24 @@ scco_obj_found:
         match = false
         If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "ellipse") Then
             param = "tag=ellipse;"
-            Parse_FindTag()
+            Parse_FindTag() ' p is updated
             Parse_GetAttrAndText()
             cx = attr("cx")
             cy = attr("cy")
             rx = attr("rx")
             ry = attr("ry")
             Parse_SetStyle()
+            Parse_Angle()
             shp = ""
             shp("func") = "ell"
             shp("x") = cx - rx - Microsoft.SmallBasic.Library.Math.Floor(pw / 2)
             shp("y") = cy - ry - Microsoft.SmallBasic.Library.Math.Floor(pw / 2)
             shp("width") = (2 * rx) + pw
             shp("height") = (2 * ry) + pw
+            shp("angle") = angle
             shp("pw") = pw
             shp("pc") = pc
             shp("bc") = bc
-            p = p + len
             match = true
         End If
     End Sub
@@ -2288,20 +2312,78 @@ scco_obj_found:
         match = false
         If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "line") Then
             param = "tag=line;"
-            Parse_FindTag()
+            Parse_FindTag() ' p is updated
             Parse_GetAttrAndText()
             Parse_SetStyle()
+            points = attr("x1") + "," + attr("y1") + " " + attr("x2") + "," + attr("y2")
+            Parse_Points()
             shp = ""
             shp("func") = "line"
-            shp("x1") = attr("x1")
-            shp("y1") = attr("y1")
-            shp("x2") = attr("x2")
-            shp("y2") = attr("y2")
+            shp("x") = x
+            shp("y") = y
+            shp("width") = width
+            shp("height") = height
+            shp("x1") = px(1) - x
+            shp("y1") = py(1) - y
+            shp("x2") = px(2) - x
+            shp("y2") = py(2) - y
             shp("pw") = pw
             shp("pc") = pc
-            p = p + len
             match = true
         End If
+    End Sub
+    Sub Parse_Points()
+        ' param points - points in a polygon
+        ' return px[], py[] - array of the points
+        ' return x, y - left top of the points
+        ' return width, height - size of the polygon
+        len = Text.GetLength(points)
+        px = ""
+        py = ""
+        nPoints = 1
+        For SmallSVGEditorModule.pPoints = 1 To len
+            c = Text.GetSubText(points, pPoints, 1)
+            While (pPoints <= len) And Text.IsSubText(DIGIT, c)
+                px(nPoints) = Text.Append(px(nPoints), c)
+                pPoints = pPoints + 1
+                c = Text.GetSubText(points, pPoints, 1)
+            End While
+            If c = CType(",", Primitive) Then
+                pPoints = pPoints + 1
+                c = Text.GetSubText(points, pPoints, 1)
+            End If
+            While (pPoints <= len) And Text.IsSubText(DIGIT, c)
+                py(nPoints) = Text.Append(py(nPoints), c)
+                pPoints = pPoints + 1
+                c = Text.GetSubText(points, pPoints, 1)
+            End While
+            If nPoints = 1 Then
+                xmin = px(1)
+                ymin = py(1)
+                xmax = px(1)
+                ymax = py(1)
+            Else
+                If px(nPoints) < xmin Then
+                    xmin = px(nPoints)
+                End If
+                If py(nPoints) < ymin Then
+                    ymin = py(nPoints)
+                End If
+                If xmax < px(nPoints) Then
+                    xmax = px(nPoints)
+                End If
+                If ymax < py(nPoints) Then
+                    ymax = py(nPoints)
+                End If
+            End If
+            If c = CType(" ", Primitive) Then
+                nPoints = nPoints + 1
+            End If
+        Next
+        x = xmin
+        y = ymin
+        width = xmax - xmin
+        height = ymax - ymin
     End Sub
     Sub Parse_Polygon()
         ' param buf - SVG buffer
@@ -2311,23 +2393,28 @@ scco_obj_found:
         match = false
         If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "polygon") Then
             param = "tag=polygon;"
-            Parse_FindTag()
+            Parse_FindTag() ' p is updated
             Parse_GetAttrAndText()
-            x = attr("x")
-            y = attr("y")
-            width = attr("width")
-            height = attr("height")
+            points = attr("points")
+            Parse_Points()
             Parse_SetStyle()
+            Parse_Angle()
             shp = ""
             shp("func") = "tri"
-            shp("x") = x - Microsoft.SmallBasic.Library.Math.Floor(pw / 2)
-            shp("y") = y - Microsoft.SmallBasic.Library.Math.Floor(pw / 2)
-            shp("width") = width + pw
-            shp("height") = height + pw
+            shp("x") = x
+            shp("y") = y
+            shp("width") = width
+            shp("height") = height
+            shp("angle") = angle
+            shp("x1") = px(1) - x
+            shp("y1") = py(1) - y
+            shp("x2") = px(2) - x
+            shp("y2") = py(2) - y
+            shp("x3") = px(3) - x
+            shp("y3") = py(3) - y
             shp("pw") = pw
             shp("pc") = pc
             shp("bc") = bc
-            p = p + len
             match = true
         End If
     End Sub
@@ -2379,29 +2466,66 @@ scco_obj_found:
         match = false
         If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "rect") Then
             param = "tag=rect;"
-            Parse_FindTag()
+            Parse_FindTag() ' p is updated
             Parse_GetAttrAndText()
             x = attr("x")
             y = attr("y")
             width = attr("width")
             height = attr("height")
             Parse_SetStyle()
+            Parse_Angle()
             shp = ""
             shp("func") = "rect"
             shp("x") = x - Microsoft.SmallBasic.Library.Math.Floor(pw / 2)
             shp("y") = y - Microsoft.SmallBasic.Library.Math.Floor(pw / 2)
             shp("width") = width + pw
             shp("height") = height + pw
+            shp("angle") = angle
             shp("pw") = pw
             shp("pc") = pc
             shp("bc") = bc
-            p = p + len
             match = true
         End If
     End Sub
     Sub Parse_Use()
+        param = "tag=use;"
+        Parse_FindTag() ' p is updated
+        Parse_GetAttrAndText()
         shX = 0
         shY = 0
+        For SmallSVGEditorModule.i = iMin To iMax
+            shp = shape(i)
+            shp("x") = shp("x") + attr("x")
+            shp("y") = shp("y") + attr("y")
+            If (shp("func") = CType("tri", Primitive)) And (shp("y2") < shp("y1")) Then
+                shp("y2") = shp("y1")
+                shp("y1") = shp("y3")
+                shp("y3") = shp("y2")
+                shp("angle") = shp("angle") + 180
+                If 360 <= shp("angle") Then
+                    shp("angle") = shp("angle") - 360
+                End If
+            End If
+            If shp("pc") <> CType("", Primitive) Then
+                color = shp("pc")
+                CS_AddColorToPalette()
+            End If
+            If shp("bc") <> CType("", Primitive) Then
+                color = shp("bc")
+                CS_AddColorToPalette()
+            End If
+            shape(i) = shp
+            CalcDetectBorder()
+        Next
+    End Sub
+    Sub DumpBuf()
+        If sp(10) = CType("", Primitive) Then
+            For SmallSVGEditorModule.i = 1 To 10
+                sp(10) = sp(10) + " "
+            Next
+        End If
+        TextWindow.WriteLine(Text.GetSubText(buf, p - 10, 21))
+        TextWindow.WriteLine(sp(10) + "^" + sp(10))
     End Sub
     Sub Popup_Init()
         TOPY = 10 ' top y
