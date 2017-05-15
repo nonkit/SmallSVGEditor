@@ -1,19 +1,19 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.95b
+' Version 1.96b
 ' Repository https://git01.codeplex.com/smallsvgeditor
-' Last update 2014-11-27
-' Program ID TLW744-5
+' Last update 2014-12-01
+' Program ID TLW744-6
 '
 ' History:
 '  - Created from Shapes 1.7b.
 '  - Changed Open/Save/Color popup design.
-'  - Supported SVG (only) for Save.
+'  - Supported SVG for Open/Save.
 '
 ' TODO:
 '  [✔] Support grouping tag (element), defs tag and use tag
 '  [ ] Support text tag (element)
-'  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
+'  [✔] Change file format from .sb (.smallbasic) to .svg in ReadShapes
 '  [ ] Check illegal behavior in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
 '  [ ] Sort subroutines
@@ -21,7 +21,7 @@
 '  [ ] Bug fix for Silverlight:  Lines move after click
 '  [ ] Bug fix for Silverlight:  Rotated triangles move after click
 '
-title = "Small SVG Editor 1.95b"
+title = "Small SVG Editor 1.96b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -31,7 +31,9 @@ GraphicsWindow.Width = gw
 GraphicsWindow.Height = gh
 Not = "False=True;True=False;"
 WQ = Text.GetCharacter(34)
-CRLF = Text.GetCharacter(13) + Text.GetCharacter(10)
+qt = WQ
+CR = Text.GetCharacter(13)
+LF = Text.GetCharacter(10)
 LT = Text.GetCharacter(60)
 UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 LOWER = "abcdefghijkomnopqrstuvwxyz"
@@ -75,8 +77,9 @@ While cont
     ElseIf c = "LEFT" Or c = "RIGHT" Or c = "UP" Or c="DOWN" Then
       If selectedshape <> "" Then
         i = selectedshape
-        _x = shape[i]["x"] + arrow_dx[c]
-        _y = shape[i]["y"] + arrow_dy[c]
+        shp = shape[i]
+        _x = shp["x"] + arrow_dx[c]
+        _y = shp["y"] + arrow_dy[c]
         MoveShape()
       EndIf
     EndIf
@@ -89,40 +92,43 @@ EndWhile
 ' end of program
 Sub CalcDetectBorder
   ' param i - index of shapes
-  If shape[i]["func"] = "line" Then           ' line
-    x = shape[i]["x2"] - shape[i]["x1"]
-    y = shape[i]["y2"] - shape[i]["y1"]
+  shp = shape[i]
+  If shp["func"] = "line" Then           ' line
+    x = shp["x2"] - shp["x1"]
+    y = shp["y2"] - shp["y1"]
     Math_CartesianToPolar()
-    If a >= 180 Then
+    If 180 <= a Then
       a = a - 180
     EndIf
-    shape[i]["angle"] = a
-    cx = shape[i]["x"] + Math.Abs(x) / 2
-    cy = shape[i]["y"] + Math.Abs(y) / 2
+    shp["angle"] = a
+    cx = shp["x"] + Math.Abs(x) / 2
+    cy = shp["y"] + Math.Abs(y) / 2
     len = Math.SquareRoot(x * x + y * y)
-    shape[i]["_x0"] = Math.Floor(cx - len / 2)
-    shape[i]["_x1"] = Math.Floor(cx + len / 2)
-    shape[i]["_y0"] = cy - 4
-    shape[i]["_y1"] = cy + 4
-  Else                                        ' rectangle, ellipse or triangle
-    If shape[i]["func"] = "tri" Then          ' triangle
-      shape[i]["width"] = shape[i]["x3"]
-      shape[i]["height"] = shape[i]["y2"]
+    shp["_x0"] = Math.Floor(cx - len / 2)
+    shp["_x1"] = Math.Floor(cx + len / 2)
+    shp["_y0"] = cy - 4
+    shp["_y1"] = cy + 4
+  Else                                   ' rectangle, ellipse or triangle
+    If shp["func"] = "tri" Then          ' triangle
+      shp["width"] = shp["x3"]
+      shp["height"] = shp["y2"]
     EndIf
-    shape[i]["_x0"] = shape[i]["x"]
-    shape[i]["_y0"] = shape[i]["y"]
-    shape[i]["_x1"] = shape[i]["x"] + shape[i]["width"]
-    shape[i]["_y1"] = shape[i]["y"] + shape[i]["height"]
+    shp["_x0"] = shp["x"]
+    shp["_y0"] = shp["y"]
+    shp["_x1"] = shp["x"] + shp["width"]
+    shp["_y1"] = shp["y"] + shp["height"]
   EndIf
+  shape[i] = shp
 EndSub
 Sub CalcPinchPos
   ' param i - shape index
   ' return mxM, myM - center of pinch
-  _x = shape[i]["x"]
-  _y = shape[i]["y"]
-  width = shape[i]["width"]
-  height = shape[i]["height"]
-  angle = shape[i]["angle"]
+  shp = shape[i]
+  _x = shp["x"]
+  _y = shp["y"]
+  width = shp["width"]
+  height = shp["height"]
+  angle = shp["angle"]
   param = "width=0;height=0;angle=" + angle + ";"
   param["cx"] = _x + width / 2
   param["cy"] = _y + height / 2
@@ -147,34 +153,35 @@ Sub CalcVertexes
   ' param shape[] - shape data
   ' return mxM, myM - free vertex
   ' return mxD, myD - fixed vertex
-  If shape[selectedshape]["func"] = "line" Then
+  shp = shape[selectedshape]
+  If shp["func"] = "line" Then
     If i = 1 Then
-      mxM = shape[selectedshape]["x"] + shape[selectedshape]["x1"]
-      myM = shape[selectedshape]["y"] + shape[selectedshape]["y1"]
-      mxD = shape[selectedshape]["x"] + shape[selectedshape]["x2"]
-      myD = shape[selectedshape]["y"] + shape[selectedshape]["y2"]
+      mxM = shp["x"] + shp["x1"]
+      myM = shp["y"] + shp["y1"]
+      mxD = shp["x"] + shp["x2"]
+      myD = shp["y"] + shp["y2"]
     ElseIf i = 2 Then
-      mxM = shape[selectedshape]["x"] + shape[selectedshape]["x2"]
-      myM = shape[selectedshape]["y"] + shape[selectedshape]["y2"]
-      mxD = shape[selectedshape]["x"] + shape[selectedshape]["x1"]
-      myD = shape[selectedshape]["y"] + shape[selectedshape]["y1"]
+      mxM = shp["x"] + shp["x2"]
+      myM = shp["y"] + shp["y2"]
+      mxD = shp["x"] + shp["x1"]
+      myD = shp["y"] + shp["y1"]
     EndIf
   Else
-    mxM = shape[selectedshape]["x"]
-    myM = shape[selectedshape]["y"]
+    mxM = shp["x"]
+    myM = shp["y"]
     mxD = mxM
     myD = myM
     If i = 1 Or i = 3 Then
-      mxD = mxD + shape[selectedshape]["width"]
+      mxD = mxD + shp["width"]
     EndIf
     If i = 1 Or i = 2 Then
-      myD = myD + shape[selectedshape]["height"]
+      myD = myD + shp["height"]
     EndIf
     If i = 2 Or i = 4 Then
-      mxM = mxM + shape[selectedshape]["width"]
+      mxM = mxM + shp["width"]
     EndIf
     If i = 3 Or i = 4 Then
-      myM = myM + shape[selectedshape]["height"]
+      myM = myM + shp["height"]
     EndIf
     param = "x=" + mxD + ";y=" + myD + ";width=0;height=0;angle=" + angle
     param = param + ";cx=" + (mxD + mxM) / 2 + ";cy=" + (myD + myM) / 2 + ";"
@@ -190,7 +197,8 @@ Sub CalcVertexes
 EndSub  
 Sub DeleteSelectedShape
   ' param selectedshape
-  Shapes.Remove(shape[selectedshape]["obj"])
+  shp = shape[selectedshape]
+  Shapes.Remove(shp["obj"])
   nShapes = nShapes - 1
   For _i = selectedshape To nShapes
     shape[_i] = shape[_i + 1]
@@ -204,32 +212,34 @@ Sub DetectClickedObject
   Stack.PushValue("local", i)
   obj = ""
   For i = 1 To nPinch
-    If pinch[i]["_x0"] <= mxD And mxD <= pinch[i]["_x1"] And pinch[i]["_y0"] <= myD And myD <= pinch[i]["_y1"] Then
+    pnch = pinch[i]
+    If pnch["_x0"] <= mxD And mxD <= pnch["_x1"] And pnch["_y0"] <= myD And myD <= pnch["_y1"] Then
       obj = "pinch" + i
       Goto dco_exit
     EndIf
   EndFor
   For i = nShapes To 1 Step -1
+    shp = shape[i]
     param = "x=" + mxD + ";y=" + myD + ";width=0;height=0;"
-    param["cx"] = (shape[i]["_x0"] + shape[i]["_x1"]) / 2
-    param["cy"] = (shape[i]["_y0"] + shape[i]["_y1"]) / 2
-    param["angle"] = -shape[i]["angle"]
+    param["cx"] = (shp["_x0"] + shp["_x1"]) / 2
+    param["cy"] = (shp["_y0"] + shp["_y1"]) / 2
+    param["angle"] = -shp["angle"]
     Shapes_CalcRotatePos()
-    If shape[i]["_x0"] <= x And x <= shape[i]["_x1"] And shape[i]["_y0"] <= y And y <= shape[i]["_y1"] Then
-      If shape[i]["func"] = "rect" Or shape[i]["func"] = "line" Then
+    If shp["_x0"] <= x And x <= shp["_x1"] And shp["_y0"] <= y And y <= shp["_y1"] Then
+      If shp["func"] = "rect" Or shp["func"] = "line" Then
         obj = "shape" + i
         Goto dco_exit
-      ElseIf shape[i]["func"] = "ell" Then
-        x = (x - param["cx"]) / shape[i]["width"] * 2
-        y = (y - param["cy"]) / shape[i]["height"] * 2
+      ElseIf shp["func"] = "ell" Then
+        x = (x - param["cx"]) / shp["width"] * 2
+        y = (y - param["cy"]) / shp["height"] * 2
         r = Math.SquareRoot(x * x + y * y)
         If r <= 1 Then
           obj = "shape" + i
           Goto dco_exit
         EndIf
-      ElseIf shape[i]["func"] = "tri" Then
-        x = (x - param["cx"]) / shape[i]["width"] * 2
-        y = (y - shape[i]["_y1"]) / shape[i]["height"]
+      ElseIf shp["func"] = "tri" Then
+        x = (x - param["cx"]) / shp["width"] * 2
+        y = (y - shp["_y1"]) / shp["height"]
         r = Math.Abs(x) + Math.Abs(y)
         If r <= 1 And y <= 0 Then
           obj = "shape" + i
@@ -239,7 +249,8 @@ Sub DetectClickedObject
     EndIf
   EndFor
   For i = 1 To nMenu
-    If menu[i]["func"] <> "" And menu[i]["_x0"] <= mxD And mxD <= menu[i]["_x1"] And menu[i]["_y0"] <= myD And myD <= menu[i]["_y1"] Then
+    mnu = menu[i]
+    If mnu["func"] <> "" And mnu["_x0"] <= mxD And mxD <= mnu["_x1"] And mnu["_y0"] <= myD And myD <= mnu["_y1"] Then
       obj = "menu" + i
       Goto dco_exit
     EndIf
@@ -258,7 +269,8 @@ Sub DoMenu                        ' if a menu item clicked do the funciton
     Mouse_SetHandler()
     i = Text.GetSubTextToEnd(obj, 5)
     obj = ""
-    func = menu[i]["func"]
+    mnu = menu[i]
+    func = mnu["func"]
     select = "True"
     ItemSelect()                  ' shows menu item frame
     If selecteditem = i And Text.IsSubText("rect|ell|tri|line", func) Then
@@ -343,14 +355,16 @@ Sub DoMenu                        ' if a menu item clicked do the funciton
         If pwidth > 0 Then
           GraphicsWindow.PenColor = pcolor
         EndIf
+        shp = shape[nShapes]
         If func = "rect" Then
-          shape[nShapes]["obj"] = Shapes.AddRectangle(w, h)
+          shp["obj"] = Shapes.AddRectangle(w, h)
         ElseIf func = "ell" Then
-          shape[nShapes]["obj"] = Shapes.AddEllipse(w, h)
+          shp["obj"] = Shapes.AddEllipse(w, h)
         ElseIf func = "tri" Then
-          shape[nShapes]["obj"] = Shapes.AddTriangle(xt, 0, 0, h, w, h)
+          shp["obj"] = Shapes.AddTriangle(xt, 0, 0, h, w, h)
         EndIf
-        Shapes.Move(shape[nShapes]["obj"], xmin, ymin)
+        Shapes.Move(shp["obj"], xmin, ymin)
+        shape[nShapes] = shp
         If mode = "single" Then
           Goto dm_exit
         EndIf
@@ -379,8 +393,10 @@ Sub DoMenu                        ' if a menu item clicked do the funciton
         If pwidth > 0 Then
           GraphicsWindow.PenColor = pcolor
         EndIf
-        shape[nShapes]["obj"] = Shapes.AddLine(x1, y1, x2, y2)
-        Shapes.Move(shape[nShapes]["obj"], xmin, ymin)
+        shp = shape[nShapes]
+        shp["obj"] = Shapes.AddLine(x1, y1, x2, y2)
+        Shapes.Move(shp["obj"], xmin, ymin)
+        shape[nShapes] = shp
         If mode = "single" Then
           Goto dm_exit
         EndIf
@@ -392,9 +408,10 @@ Sub DoMenu                        ' if a menu item clicked do the funciton
         pen = pen + 1
       EndIf
       pwidth = pw[pen]
-      x = menu[i]["_x0"]
-      y = menu[i]["_y0"]
-      size = menu[i]["_x1"] - x
+      mnu = menu[i]
+      x = mnu["_x0"]
+      y = mnu["_y0"]
+      size = mnu["_x1"] - x
       GraphicsWindow.BrushColor = "#EEEEEE"
       GraphicsWindow.FillRectangle(x, y, size, size)
       DrawMenuItem()
@@ -433,13 +450,15 @@ Sub DoMenu                        ' if a menu item clicked do the funciton
       i = selectedshape
       select = "False"
       ShapeSelect()
+      shp = shape[i]
       If func = "pw" Then
-        shape[i]["pw"] = pwidth
+        shp["pw"] = pwidth
       ElseIf func = "pc" Then
-        shape[i]["pc"] = pcolor
+        shp["pc"] = pcolor
       ElseIf func = "bc" Then
-        shape[i]["bc"] = color
+        shp["bc"] = color
       EndIf
+      shape[i] = shp
       iMin = i                    ' to re-size Shapes
       iMax = nShapes              ' to keep z-order of Shapes
       Shapes_Remove()
@@ -481,16 +500,19 @@ Sub DoPinch                     ' if a pinch clicked then rotate or re-size a sh
     If i = 5 Then               ' rotate a shape
       i = selectedshape
       WaitToReleaseR()          ' to get angle
-      Shapes.Rotate(shape[i]["obj"], angle)
-      shape[i]["angle"] = Math.Floor(angle)
+      shp = shape[i]
+      Shapes.Rotate(shp["obj"], angle)
+      shp["angle"] = Math.Floor(angle)
+      shape[i] = shp
       select = "False"
       ShapeSelect()             ' remove pinches
       select = "True"
       ShapeSelect()             ' show pinches
     Else                        ' re-size a shape
-      angle = shape[selectedshape]["angle"]
+      shp = shape[selectedshape]
+      angle = shp["angle"]
       CalcVertexes()            ' to get mxM, myM, mxD, myD
-      func = shape[selectedshape]["func"]
+      func = shp["func"]
       WaitToReleaseS()          ' to get mxU, myU
       i = selectedshape
       select = "False"
@@ -555,19 +577,23 @@ Sub DrawMenu
     yMenu = cyMenu + Math.Remainder(i - 1, 1) * (sizeMenu + 14)
     GraphicsWindow.BrushColor = "#EEEEEE"
     GraphicsWindow.FillRectangle(xMenu, yMenu, sizeMenu, sizeMenu)
-    menu[i]["_x0"] = xMenu
-    menu[i]["_y0"] = yMenu
-    menu[i]["_x1"] = xMenu + sizeMenu
-    menu[i]["_y1"] = yMenu + sizeMenu
+    mnu = menu[i]
+    mnu["_x0"] = xMenu
+    mnu["_y0"] = yMenu
+    mnu["_x1"] = xMenu + sizeMenu
+    mnu["_y1"] = yMenu + sizeMenu
+    menu[i] = mnu
     DrawMenuItem()
   EndFor
   nMenu = nMenu + 1
   imenubar = nMenu
-  menu[i]["_x0"] = 0
-  menu[i]["_y0"] = 0
-  menu[i]["_x1"] = gw
-  menu[i]["_y1"] = 20 + sizeMenu
-  menu[i]["func"] = "menubar"
+  mnu = menu[i]
+  mnu["_x0"] = 0
+  mnu["_y0"] = 0
+  mnu["_x1"] = gw
+  mnu["_y1"] = 20 + sizeMenu
+  mnu["func"] = "menubar"
+  menu[i] = mnu
 EndSub
 Sub DrawMenuItem
   ' param i - item number
@@ -575,26 +601,27 @@ Sub DrawMenuItem
   ' param pcolor - pen color
   ' param bcolor - brush color
   margin = 4
-  x = menu[i]["_x0"]
-  y = menu[i]["_y0"]
-  size = menu[i]["_x1"] - x
+  mnu = menu[i]
+  x = mnu["_x0"]
+  y = mnu["_y0"]
+  size = mnu["_x1"] - x
   GraphicsWindow.PenColor = "Black"
   GraphicsWindow.PenWidth = 2
   GraphicsWindow.FontBold = "False"
   GraphicsWindow.FontSize = 8
   url = "http://www.nonkit.com/smallbasic.files/"
   If i = 1 Then
-    menu[i]["func"] = "open"
+    mnu["func"] = "open"
     GraphicsWindow.DrawImage(url + "open.png", x, y)
     itemname[i] = "Open"
   ElseIf i = 2 Then
-    menu[i]["func"] = "save"
+    mnu["func"] = "save"
     GraphicsWindow.DrawImage(url + "save.png", x, y)
     Program.Delay(msWait)       ' ? for Silverlight
     itemname[i] = "Save"
   ElseIf i = 3 Then
     icut = i                    ' for short cut key
-    menu[i]["func"] = "cut"
+    mnu["func"] = "cut"
     ' initialize shapes
     Shapes_Init()
     nShapes = Array.GetItemCount(shape)
@@ -615,32 +642,32 @@ Sub DrawMenuItem
     itemname[i] = "Cut"
   ElseIf i = 4 Then
     icopy = i                   ' for short cut key
-    menu[i]["func"] = "copy"
+    mnu["func"] = "copy"
     GraphicsWindow.DrawImage(url + "copy.png", x, y)
     Program.Delay(msWait)       ' ? for Silverlight
     itemname[i] = "Copy"
   ElseIf i = 5 Then
     ipaste = i                  ' for short cut key
-    menu[i]["func"] = "paste"
+    mnu["func"] = "paste"
     GraphicsWindow.DrawImage(url + "paste.png", x, y)
     Program.Delay(msWait)       ' ? for Silverlight
     itemname[i] = "Paste"
   ElseIf i = 6 Then
-    menu[i]["func"] = "rect"
+    mnu["func"] = "rect"
     GraphicsWindow.DrawRectangle(x + margin, y + margin, size - margin * 2, size - margin * 2)
     itemname[i] = "Rectangle"
     repeat["rect"] = Shapes.AddImage(url + "repeat.png")
     Shapes.Move(repeat["rect"], x, y)   ' for consecutive shapes addition
     Shapes.HideShape(repeat["rect"])
   ElseIf i = 7 Then
-    menu[i]["func"] = "ell"
+    mnu["func"] = "ell"
     GraphicsWindow.DrawEllipse(x + margin, y + margin, size - margin * 2, size - margin * 2)
     itemname[i] = "Ellipse"
     repeat["ell"] = Shapes.AddImage(url + "repeat.png")
     Shapes.Move(repeat["ell"], x, y)    ' for consecutive shapes addition
     Shapes.HideShape(repeat["ell"])
   ElseIf i = 8 Then
-    menu[i]["func"] = "tri"
+    mnu["func"] = "tri"
     x1 = x + size / 2
     y1 = y + margin
     x2 = x + margin
@@ -653,7 +680,7 @@ Sub DrawMenuItem
     Shapes.Move(repeat["tri"], x, y)    ' for consecutive shapes addition
     Shapes.HideShape(repeat["tri"])
   ElseIf i = 9 Then
-    menu[i]["func"] = "line"
+    mnu["func"] = "line"
     x1 = x + margin
     y1 = y + margin
     x2 = x + size - margin
@@ -664,7 +691,7 @@ Sub DrawMenuItem
     Shapes.Move(repeat["line"], x, y)   ' for consecutive shapes addition
     Shapes.HideShape(repeat["line"])
   ElseIf i = 10 Then
-    menu[i]["func"] = "pw"
+    mnu["func"] = "pw"
     GraphicsWindow.PenWidth = pwidth
     x1 = x + margin
     y1 = y + size / 2
@@ -673,14 +700,14 @@ Sub DrawMenuItem
     GraphicsWindow.DrawLine(x1, y1, x2, y2)
     itemname[i] = "Pen Width"
   ElseIf i = 11 Then
-    menu[i]["func"] = "pc"
+    mnu["func"] = "pc"
     margin = 6
     GraphicsWindow.PenWidth = 4
     GraphicsWindow.PenColor = pcolor
     GraphicsWindow.DrawRectangle(x + margin, y + margin, size - margin * 2, size - margin * 2)
     itemname[i] = "Pen Color"
   ElseIf i = 12 Then
-    menu[i]["func"] = "bc"
+    mnu["func"] = "bc"
     GraphicsWindow.BrushColor = bcolor
     GraphicsWindow.FillRectangle(x + margin, y + margin, size - margin * 2, size - margin * 2)
     GraphicsWindow.PenColor = "Black"
@@ -688,7 +715,7 @@ Sub DrawMenuItem
     GraphicsWindow.DrawRectangle(x + margin, y + margin, size - margin * 2, size - margin * 2)
     itemname[i] = "Brush Color"
   ElseIf i = 13 Then
-    menu[i]["func"] = "gr"
+    mnu["func"] = "gr"
     GraphicsWindow.PenColor = "#AAAAAA"
     GraphicsWindow.PenWidth = 1
     For _x = x + margin To x + size - margin Step (size - margin * 2) / 4
@@ -699,6 +726,7 @@ Sub DrawMenuItem
     EndFor
     itemname[i] = "Grid"
   EndIf
+  menu[i] = mnu
   If itemname[i] <> "" And oItem[i] = "" Then
     GraphicsWindow.BrushColor = "Black"
     oItem[i] = Shapes.AddText(itemname[i])
@@ -717,36 +745,41 @@ Sub ItemSelect
       GraphicsWindow.PenColor = "#EEEEEE"
     EndIf
     GraphicsWindow.PenWidth = 2
-    x = menu[i]["_x0"] - 1
-    y = menu[i]["_y0"] - 1
-    width = menu[i]["_x1"] - x + 1
-    height = menu[i]["_y1"] - y + 1
+    mnu = menu[i]
+    x = mnu["_x0"] - 1
+    y = mnu["_y0"] - 1
+    width = mnu["_x1"] - x + 1
+    height = mnu["_y1"] - y + 1
     GraphicsWindow.DrawRectangle(x, y, width, height)
   EndIf
 EndSub
 Sub MoveShape
   ' param i - shape index
   ' param _x, _y - new position of the shape
-  dx = _x - shape[i]["x"]
-  dy = _y - shape[i]["y"]
-  shape[i]["x"] = _x
-  shape[i]["y"] = _y
-  shape[i]["_x0"] = shape[i]["_x0"] + dx
-  shape[i]["_x1"] = shape[i]["_x1"] + dx
-  shape[i]["_y0"] = shape[i]["_y0"] + dy
-  shape[i]["_y1"] = shape[i]["_y1"] + dy
-  Shapes.Move(shape[i]["obj"], _x, _y)
-  If shape[i]["func"] = "line" Then
+  shp = shape[i]
+  dx = _x - shp["x"]
+  dy = _y - shp["y"]
+  shp["x"] = _x
+  shp["y"] = _y
+  shp["_x0"] = shp["_x0"] + dx
+  shp["_x1"] = shp["_x1"] + dx
+  shp["_y0"] = shp["_y0"] + dy
+  shp["_y1"] = shp["_y1"] + dy
+  shape[i] = shp
+  Shapes.Move(shp["obj"], _x, _y)
+  If shp["func"] = "line" Then
     _iMax = 2
   Else
     _iMax = 5
   EndIf
   For _i = 1 To _iMax
-    pinch[_i]["_x0"] = pinch[_i]["_x0"] + dx
-    pinch[_i]["_x1"] = pinch[_i]["_x1"] + dx
-    pinch[_i]["_y0"] = pinch[_i]["_y0"] + dy
-    pinch[_i]["_y1"] = pinch[_i]["_y1"] + dy
-    Shapes.Move(pinch[_i]["obj"], pinch[_i]["_x0"], pinch[_i]["_y0"])
+    pnch = pinch[_i]
+    pnch["_x0"] = pnch["_x0"] + dx
+    pnch["_x1"] = pnch["_x1"] + dx
+    pnch["_y0"] = pnch["_y0"] + dy
+    pnch["_y1"] = pnch["_y1"] + dy
+    pinch[_i] = pnch
+    Shapes.Move(pnch["obj"], pnch["_x0"], pnch["_y0"])
   EndFor
 EndSub
 Sub NormalizePos
@@ -770,88 +803,53 @@ Sub NormalizePos
 EndSub
 Sub ReadShapes
   File_Open()
-  ' Parse "shX = ..."
-  ptr = Text.GetIndexOf(buf, "shX = ")
-  If ptr = 0 Then
-    Goto rs_exit
-  EndIf
-  shX = ""
-  ptr = ptr + 6
-  c = Text.GetSubText(buf, ptr, 1)
-  While Text.GetIndexOf("0123456789", c) > 0
-    shX = Text.Append(shX, c)
-    ptr = ptr + 1
-    c = Text.GetSubText(buf, ptr, 1)
-  EndWhile
-  ' Parse "shY = ..."
-  _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(buf, ptr), "shY = ")
-  If _ptr = 0 Then
-    Goto rs_exit
-  EndIf
-  shY = ""
-  ptr = ptr + _ptr + 5
-  c = Text.GetSubText(buf, ptr, 1)
-  While Text.GetIndexOf("0123456789", c) > 0
-    shY = Text.Append(shY, c)
-    ptr = ptr + 1
-    c = Text.GetSubText(buf, ptr, 1)
-  EndWhile
-  ' Parse "shape[i] = ..."
-  While "True"
-    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(buf, ptr), "shape[")
-    If _ptr = 0 Then
-      Goto rs_exit
+  ' param buf - SVG buffer
+  scale = 1
+  iMin = 1
+  iMax = 0
+  p = 1
+  Parse_Header()
+  Parse_Space()
+  Parse_Defs()
+  While match
+    Parse_Space()
+    Parse_Rect()
+    If match Then
+      iMax = iMax + 1
+      shape[iMax] = shp
     EndIf
-    ptr = ptr + _ptr + 5
-    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(buf, ptr), "] = " + WQ)
-    If _ptr = 0 Then
-      Goto rs_exit
-    EndIf
-    i = Text.GetSubText(buf, ptr, _ptr - 1)
-    ptr = ptr + _ptr + 4
-    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(buf, ptr), WQ)
-    If _ptr = 0 Then
-      Goto rs_exit
-    EndIf
-    shape[nShapes + i] = Text.GetSubText(buf, ptr, _ptr - 1)
-    ptr = ptr + _ptr
-  EndWhile
-  rs_exit:
-  iMin = nShapes + 1
-  nShapes = Array.GetItemCount(shape)
-  iMax = nShapes
-  For i = iMin To iMax
-    shape[i]["x"] = shape[i]["x"] + shX
-    shape[i]["y"] = shape[i]["y"] + shY
-    If shape[i]["func"] = "tri" And (shape[i]["y2"] < shape[i]["y1"]) Then
-      shape[i]["y2"] = shape[i]["y1"]
-      shape[i]["y1"] = shape[i]["y3"]
-      shape[i]["y3"] = shape[i]["y2"]
-      shape[i]["angle"] = shape[i]["angle"] + 180
-      If shape[i]["angle"] >= 360 Then
-        shape[i]["angle"] = shape[i]["angle"] - 360
+    If Not[match] Then
+      Parse_Ellipse()
+      If match Then
+        iMax = iMax + 1
+        shape[iMax] = shp
       EndIf
     EndIf
-    CalcDetectBorder()
-    If shape[i]["pc"] <> "" Then
-      color = shape[i]["pc"]
-      CS_AddColorToPalette()
+    If Not[match] Then
+      Parse_Polygon()
+      If match Then
+        iMax = iMax + 1
+        shape[iMax] = shp
+      EndIf
     EndIf
-    If shape[i]["bc"] <> "" Then
-      color = shape[i]["bc"]
-      CS_AddColorToPalette()
+    If Not[match] Then
+      Parse_Line()
+      If match Then
+        iMax = iMax + 1
+        shape[iMax] = shp
+      EndIf
     EndIf
-  EndFor
-  shX = 0
-  shY = 0
-  scale = 1
+  EndWhile
+  Parse_Use()
   Shapes_Add()
 EndSub
 Sub RegisterShapeData
   ' param i - index of shapes
   ' param func - "rect", "ell", "tri" or "line"
   ' return shape[i] - shape data
-  shape[i]["func"] = func
+  shp = shape[i]
+  shp["func"] = func
+  shape[i] = shp
   RegisterShapeStyle()
   RegisterShapeMetrics()
 EndSub
@@ -864,6 +862,7 @@ Sub RegisterShapeMetrics
   ' return xmin, ymin, w, h - shape position and size
   ' return xt - top position for triangle
   ' return x1, y1, x2, y2 - line position
+  shp = shape[i]
   If func = "line" Then           ' line
     xmin = Math.Min(mxD, mxU)
     ymin = Math.Min(myD, myU)
@@ -873,14 +872,14 @@ Sub RegisterShapeMetrics
     y1 = myD - ymin
     x2 = mxU - xmin
     y2 = myU - ymin
-    shape[i]["x1"] = x1
-    shape[i]["y1"] = y1
-    shape[i]["x2"] = x2
-    shape[i]["y2"] = y2
+    shp["x1"] = x1
+    shp["y1"] = y1
+    shp["x2"] = x2
+    shp["y2"] = y2
   Else                            ' rectangle, ellipse or triangle
     mxM = mxU
     myM = myU
-    angle = shape[i]["angle"]
+    angle = shp["angle"]
     NormalizePos()
     xmin = Math.Min(_mxD, _mxM)
     ymin = Math.Min(_myD, _myM)
@@ -888,20 +887,21 @@ Sub RegisterShapeMetrics
     ymax = Math.Max(_myD, _myM)
     w = xmax - xmin
     h = ymax - ymin
-    shape[i]["width"] = w
-    shape[i]["height"] = h
+    shp["width"] = w
+    shp["height"] = h
   EndIf
-  shape[i]["x"] = xmin
-  shape[i]["y"] = ymin
+  shp["x"] = xmin
+  shp["y"] = ymin
   If func = "tri" Then                    ' triangle
     xt = Math.Floor((xmax - xmin) / 2)    ' x top
-    shape[i]["x1"] = xt
-    shape[i]["y1"] = 0
-    shape[i]["x2"] = 0
-    shape[i]["y2"] = h
-    shape[i]["x3"] = w
-    shape[i]["y3"] = h
+    shp["x1"] = xt
+    shp["y1"] = 0
+    shp["x2"] = 0
+    shp["y2"] = h
+    shp["x3"] = w
+    shp["y3"] = h
   EndIf
+  shape[i] = shp
   CalcDetectBorder()
 EndSub
 Sub RegisterShapeStyle
@@ -910,15 +910,17 @@ Sub RegisterShapeStyle
   ' param pcolor - pen color
   ' param bcolor - brush color
   ' return shape[i] - shape data
-  shape[i]["pw"] = pwidth
+  shp = shape[i]
+  shp["pw"] = pwidth
   If pwidth > 0 Then
-    shape[i]["pc"] = pcolor
+    shp["pc"] = pcolor
   Else
-    shape[i]["pc"] = ""
+    shp["pc"] = ""
   EndIf
   If func <> "line" Then        ' rectangle, ellipse or triangle
-    shape[i]["bc"] = bcolor
+    shp["bc"] = bcolor
   EndIf
+  shape[i] = shp
 EndSub
 Sub ShapeSelect
   ' Show or remove pinches for a selected shape
@@ -926,66 +928,75 @@ Sub ShapeSelect
   ' param select - "True" if selected
   ' return selectedshape - selected shape index
   If select Then
+    shp = shape[i]
     Stack.PushValue("local", x)
     Stack.PushValue("local", y)
     GraphicsWindow.PenColor = "Black"
     GraphicsWindow.PenWidth = 1
     sizePinch = 10
     selectedshape = i
-    shX = shape[i]["x"]
-    shY = shape[i]["y"]
+    shX = shp["x"]
+    shY = shp["y"]
     GraphicsWindow.BrushColor = "Lime"
-    If shape[i]["func"] = "line" Then
+    If shp["func"] = "line" Then
       nPinch = 2
       For _i = 1 To nPinch
-        pinch[_i]["obj"] = Shapes.AddEllipse(sizePinch, sizePinch)
-        x = shX + shape[i]["x" + _i] - sizePinch / 2
-        y = shY + shape[i]["y" + _i] - sizePinch / 2
-        Shapes.Move(pinch[_i]["obj"], x, y)
-        pinch[_i]["_x0"] = x
-        pinch[_i]["_y0"] = y
-        pinch[_i]["_x1"] = x + sizePinch
-        pinch[_i]["_y1"] = y + sizePinch
+        pnch = pinch[_i]
+        pnch["obj"] = Shapes.AddEllipse(sizePinch, sizePinch)
+        x = shX + shp["x" + _i] - sizePinch / 2
+        y = shY + shp["y" + _i] - sizePinch / 2
+        Shapes.Move(pnch["obj"], x, y)
+        pnch["_x0"] = x
+        pnch["_y0"] = y
+        pnch["_x1"] = x + sizePinch
+        pnch["_y1"] = y + sizePinch
+        pinch[_i] = pnch
       EndFor
     Else
-      pinch[5]["obj"] = Shapes.AddEllipse(sizePinch, sizePinch)
-      shWidth = shape[i]["width"]
-      shHeight = shape[i]["height"]
+      pnch = pinch[5]
+      pnch["obj"] = Shapes.AddEllipse(sizePinch, sizePinch)
+      shWidth = shp["width"]
+      shHeight = shp["height"]
       param["cx"] = shX + shWidth / 2
       param["cy"] = shY + shHeight / 2
-      param["angle"] = shape[i]["angle"]
+      param["angle"] = shp["angle"]
       param["x"] = shX + shWidth / 2 - sizePinch / 2
       param["y"] = shY - 30 - sizePinch / 2
       param["width"] = sizePinch
       param["height"] = sizePinch
       Shapes_CalcRotatePos()
-      Shapes.Move(pinch[5]["obj"], x, y)
-      pinch[5]["_x0"] = x
-      pinch[5]["_y0"] = y
-      pinch[5]["_x1"] = x + sizePinch
-      pinch[5]["_y1"] = y + sizePinch
+      Shapes.Move(pnch["obj"], x, y)
+      pnch["_x0"] = x
+      pnch["_y0"] = y
+      pnch["_x1"] = x + sizePinch
+      pnch["_y1"] = y + sizePinch
+      pinch[5] = pnch
       nPinch = 5
       xPinch = "1=0;2=" + shWidth + ";3=0;4=" + shWidth + ";"
       yPinch = "1=0;2=0;3=" + shHeight + ";4=" + shHeight + ";"
       GraphicsWindow.BrushColor = "#639AE7"
       For _i = 1 To 4
-        pinch[_i]["obj"] = Shapes.AddEllipse(sizePinch, sizePinch)
+        pnch = pinch[_i]
+        pnch["obj"] = Shapes.AddEllipse(sizePinch, sizePinch)
         param["x"] = shX + xPinch[_i] - sizePinch / 2
         param["y"] = shY + yPinch[_i] - sizePinch / 2
         Shapes_CalcRotatePos()
-        Shapes.Move(pinch[_i]["obj"], x, y)
-        pinch[_i]["_x0"] = x
-        pinch[_i]["_y0"] = y
-        pinch[_i]["_x1"] = x + sizePinch
-        pinch[_i]["_y1"] = y + sizePinch
+        Shapes.Move(pnch["obj"], x, y)
+        pnch["_x0"] = x
+        pnch["_y0"] = y
+        pnch["_x1"] = x + sizePinch
+        pnch["_y1"] = y + sizePinch
+        pinch[_i] = pnch
       EndFor
+      shape[i] = shp
     EndIf
     y = Stack.PopValue("local")
     x = Stack.PopValue("local")
   Else
     selectedshape = ""
     For _i = 1 To nPinch
-      Shapes.Remove(pinch[_i]["obj"])
+      pnch = pinch[_i]
+      Shapes.Remove(pnch["obj"])
     EndFor
     nPinch = 0
   EndIf
@@ -1007,10 +1018,11 @@ Sub WaitToReleaseM ' for moving a shape
   GraphicsWindow.BrushColor = "White"
   param = "down=False;move=True;"   ' for moving a shape
   Mouse_SetHandler()
-  func = shape[i]["func"]
-  _x = shape[i]["x"]
-  _y = shape[i]["y"]
-  shAngle = shape[i]["angle"]
+  shp = shape[i]
+  func = shp["func"]
+  _x = shp["x"]
+  _y = shp["y"]
+  shAngle = shp["angle"]
   mxM = mxD
   myM = myD
   moved = "True"
@@ -1018,26 +1030,26 @@ Sub WaitToReleaseM ' for moving a shape
     If moved Then
       param = "move=False;"   ' while moving a shape
       Mouse_SetHandler()
-      _x = shape[i]["x"] + mxM - mxD
-      _y = shape[i]["y"] + myM - myD
+      _x = shp["x"] + mxM - mxD
+      _y = shp["y"] + myM - myD
       If oFrame[func] = "" Then
         If func = "rect" Then
-          oFrame[func] = Shapes.AddRectangle(shape[i]["width"], shape[i]["height"])
+          oFrame[func] = Shapes.AddRectangle(shp["width"], shp["height"])
         ElseIf func = "ell" Then
-          oFrame[func] = Shapes.AddEllipse(shape[i]["width"], shape[i]["height"])
+          oFrame[func] = Shapes.AddEllipse(shp["width"], shp["height"])
         ElseIf func = "tri" Then
-          _x1 = shape[i]["x1"]
-          _y1 = shape[i]["y1"]
-          _x2 = shape[i]["x2"]
-          _y2 = shape[i]["y2"]
-          _x3 = shape[i]["x3"]
-          _y3 = shape[i]["y3"]
+          _x1 = shp["x1"]
+          _y1 = shp["y1"]
+          _x2 = shp["x2"]
+          _y2 = shp["y2"]
+          _x3 = shp["x3"]
+          _y3 = shp["y3"]
           oFrame[func] = Shapes.AddTriangle(_x1, _y1, _x2, _y2, _x3, _y3)
         ElseIf func = "line" Then
-          _x1 = shape[i]["x1"]
-          _y1 = shape[i]["y1"]
-          _x2 = shape[i]["x2"]
-          _y2 = shape[i]["y2"]
+          _x1 = shp["x1"]
+          _y1 = shp["y1"]
+          _x2 = shp["x2"]
+          _y2 = shp["y2"]
           oFrame[func] = Shapes.AddLine(_x1, _y1, _x2, _y2)
           Shapes.SetOpacity(oFrame[func], 50)
         EndIf
@@ -1075,14 +1087,15 @@ Sub WaitToReleaseR ' for rotating a shape
   CalcPinchPos()  ' into mxM, myM
   cx = param["cx"]
   cy = param["cy"]
-  func = shape[i]["func"]
+  shp = shape[i]
+  func = shp["func"]
   If func = "tri" Then
-    x1 = shape[i]["x1"]
-    y1 = shape[i]["y1"]
-    x2 = shape[i]["x2"]
-    y2 = shape[i]["y2"]
-    x3 = shape[i]["x3"]
-    y3 = shape[i]["y3"]
+    x1 = shp["x1"]
+    y1 = shp["y1"]
+    x2 = shp["x2"]
+    y2 = shp["y2"]
+    x3 = shp["x3"]
+    y3 = shp["y3"]
   EndIf
   moved = "True"
   If oFrame[func] <> "" Then
@@ -1187,96 +1200,99 @@ Sub WriteShapes
   sp[6] = "      "
   sp[8] = "        "
   buf = LT + "svg width=" + WQ + gw + WQ + " "
-  buf = buf + "height=" + WQ + gh + WQ + ">" + CRLF
-  buf = buf + "  " + LT + "defs>" + CRLF
-  buf = buf + sp[4] + LT + "g id=" + WQ + "g1" + WQ + ">" + CRLF
+  buf = buf + "height=" + WQ + gh + WQ + ">" + CR + LF
+  buf = buf + "  " + LT + "defs>" + CR + LF
+  buf = buf + sp[4] + LT + "g id=" + WQ + "g1" + WQ + ">" + CR + LF
   If nShapes > 0 Then
-    xmin = shape[1]["x"]
-    ymin = shape[1]["y"]
-    xmax = shape[1]["x"]
-    ymax = shape[1]["y"]
+    shp = shape[1]
+    xmin = shp["x"]
+    ymin = shp["y"]
+    xmax = shp["x"]
+    ymax = shp["y"]
   EndIf
   For i = 2 To nShapes
-    If shape[i]["x"] < xmin Then
-      xmin = shape[i]["x"]
+    shp = shape[i]
+    If shp["x"] < xmin Then
+      xmin = shp["x"]
     EndIf
-    If shape[i]["y"] < ymin Then
-      ymin = shape[i]["y"]
+    If shp["y"] < ymin Then
+      ymin = shp["y"]
     EndIf
-    If xmax < shape[i]["x"] Then
-      xmax = shape[i]["x"]
+    If xmax < shp["x"] Then
+      xmax = shp["x"]
     EndIf
-    If ymax < shape[i]["y"] Then
-      ymax = shape[i]["y"]
+    If ymax < shp["y"] Then
+      ymax = shp["y"]
     EndIf
   EndFor
   For i = 1 To nShapes
-    If shape[i]["func"] = "rect" Then
+    shp = shape[i]
+    If shp["func"] = "rect" Then
       buf = buf + sp[6] + LT + "rect "
-      buf = buf + "x=" + WQ + Math.Floor(shape[i]["x"] + shape[i]["pw"] / 2 - xmin) + WQ + " "
-      buf = buf + "y=" + WQ + Math.Floor(shape[i]["y"] + shape[i]["pw"] / 2 - ymin) + WQ + " "
-      buf = buf + "width=" + WQ + (shape[i]["width"] - shape[i]["pw"]) + WQ + " "
-      buf = buf + "height=" + WQ + (shape[i]["height"] - shape[i]["pw"]) + WQ + " "
-      If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + CRLF + sp[8]
-        buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + Math.Floor(shape[i]["width"] / 2 + shape[i]["x"] - xmin) + " "
-        buf = buf + Math.Floor(shape[i]["height"] / 2 + shape[i]["y"] - ymin) + ")" + WQ + " "
+      buf = buf + "x=" + WQ + Math.Floor(shp["x"] + shp["pw"] / 2 - xmin) + WQ + " "
+      buf = buf + "y=" + WQ + Math.Floor(shp["y"] + shp["pw"] / 2 - ymin) + WQ + " "
+      buf = buf + "width=" + WQ + (shp["width"] - shp["pw"]) + WQ + " "
+      buf = buf + "height=" + WQ + (shp["height"] - shp["pw"]) + WQ + " "
+      If shp["angle"] <> 0 And shp["angle"] <> "" Then
+        buf = buf + CR + LF + sp[8]
+        buf = buf + "transform=" + WQ + "rotate(" + shp["angle"] + " "
+        buf = buf + Math.Floor(shp["width"] / 2 + shp["x"] - xmin) + " "
+        buf = buf + Math.Floor(shp["height"] / 2 + shp["y"] - ymin) + ")" + WQ + " "
       EndIf
-      buf = buf + CRLF + sp[8]
-      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
-    ElseIf shape[i]["func"] = "ell" Then
+      buf = buf + CR + LF + sp[8]
+      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shp["bc"]) + ";"
+    ElseIf shp["func"] = "ell" Then
       buf = buf + sp[6] + LT + "ellipse "
-      cx = Math.Floor(shape[i]["width"] / 2 + shape[i]["x"] - xmin)
-      cy = Math.Floor(shape[i]["height"] / 2 + shape[i]["y"] - ymin)
-      rx = Math.Floor((shape[i]["width"] - shape[i]["pw"]) / 2)
-      ry = Math.Floor((shape[i]["height"] - shape[i]["pw"]) / 2)
+      cx = Math.Floor(shp["width"] / 2 + shp["x"] - xmin)
+      cy = Math.Floor(shp["height"] / 2 + shp["y"] - ymin)
+      rx = Math.Floor((shp["width"] - shp["pw"]) / 2)
+      ry = Math.Floor((shp["height"] - shp["pw"]) / 2)
       buf = buf + "cx=" + WQ + cx + WQ + " "
       buf = buf + "cy=" + WQ + cy + WQ + " "
       buf = buf + "rx=" + WQ + rx + WQ + " "
       buf = buf + "ry=" + WQ + ry + WQ + " "
-      If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + CRLF + sp[8]
-        buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
+      If shp["angle"] <> 0 And shp["angle"] <> "" Then
+        buf = buf + CR + LF + sp[8]
+        buf = buf + "transform=" + WQ + "rotate(" + shp["angle"] + " "
         buf = buf + cx + " "
         buf = buf + cy + ")" + WQ + " "
       EndIf
-      buf = buf + CRLF + sp[8]
-      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
-    ElseIf shape[i]["func"] = "tri" Then
+      buf = buf + CR + LF + sp[8]
+      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shp["bc"]) + ";"
+    ElseIf shp["func"] = "tri" Then
       buf = buf + sp[6] + LT + "polygon points=" + WQ
-      buf = buf + (shape[i]["x1"] + shape[i]["x"] - xmin) + ","
-      buf = buf + (shape[i]["y1"] + shape[i]["y"] - ymin) + " "
-      buf = buf + (shape[i]["x2"] + shape[i]["x"] - xmin) + ","
-      buf = buf + (shape[i]["y2"] + shape[i]["y"] - ymin) + " "
-      buf = buf + (shape[i]["x3"] + shape[i]["x"] - xmin) + ","
-      buf = buf + (shape[i]["y3"] + shape[i]["y"] - ymin) + WQ + " "
-      If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + CRLF + sp[8]
-        buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + (shape[i]["x1"] + shape[i]["x"] - xmin) + " "
-        buf = buf + Math.Floor((shape[i]["y2"] - shape[i]["y1"]) / 2 + shape[i]["y"] - ymin) + ")" + WQ + " "
+      buf = buf + (shp["x1"] + shp["x"] - xmin) + ","
+      buf = buf + (shp["y1"] + shp["y"] - ymin) + " "
+      buf = buf + (shp["x2"] + shp["x"] - xmin) + ","
+      buf = buf + (shp["y2"] + shp["y"] - ymin) + " "
+      buf = buf + (shp["x3"] + shp["x"] - xmin) + ","
+      buf = buf + (shp["y3"] + shp["y"] - ymin) + WQ + " "
+      If shp["angle"] <> 0 And shp["angle"] <> "" Then
+        buf = buf + CR + LF + sp[8]
+        buf = buf + "transform=" + WQ + "rotate(" + shp["angle"] + " "
+        buf = buf + (shp["x1"] + shp["x"] - xmin) + " "
+        buf = buf + Math.Floor((shp["y2"] - shp["y1"]) / 2 + shp["y"] - ymin) + ")" + WQ + " "
       EndIf
-      buf = buf + CRLF + sp[8]
-      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
-    ElseIf shape[i]["func"] = "line" Then
+      buf = buf + CR + LF + sp[8]
+      buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shp["bc"]) + ";"
+    ElseIf shp["func"] = "line" Then
       buf = buf + sp[6] + LT + "line "
-      buf = buf + "x1=" + WQ + (shape[i]["x1"] + shape[i]["x"] - xmin) + WQ + " "
-      buf = buf + "y1=" + WQ + (shape[i]["y1"] + shape[i]["y"] - ymin) + WQ + " "
-      buf = buf + "x2=" + WQ + (shape[i]["x2"] + shape[i]["x"] - xmin) + WQ + " "
-      buf = buf + "y2=" + WQ + (shape[i]["y2"] + shape[i]["y"] - ymin) + WQ + " "
-      buf = buf + CRLF + sp[8]
+      buf = buf + "x1=" + WQ + (shp["x1"] + shp["x"] - xmin) + WQ + " "
+      buf = buf + "y1=" + WQ + (shp["y1"] + shp["y"] - ymin) + WQ + " "
+      buf = buf + "x2=" + WQ + (shp["x2"] + shp["x"] - xmin) + WQ + " "
+      buf = buf + "y2=" + WQ + (shp["y2"] + shp["y"] - ymin) + WQ + " "
+      buf = buf + CR + LF + sp[8]
       buf = buf + "style=" + WQ
     EndIf
-    If shape[i]["pw"] > 0 Then
-      buf = buf + "stroke:" + Text.ConvertToLowerCase(shape[i]["pc"]) + ";"
+    If shp["pw"] > 0 Then
+      buf = buf + "stroke:" + Text.ConvertToLowerCase(shp["pc"]) + ";"
     EndIf
-    buf = buf + "stroke-width:" + shape[i]["pw"] + WQ + "/>" + CRLF
+    buf = buf + "stroke-width:" + shp["pw"] + WQ + "/>" + CR + LF
   EndFor
-  buf = buf + sp[4] + LT + "/g>" + CRLF
-  buf = buf + "  " + LT + "/defs>" + CRLF
-  buf = buf + "  " + LT + "use x=" + xmin + " y=" + ymin + " xlink:href=" + WQ + "#g1" + WQ + " />" + CRLF
-  buf = buf + LT + "/svg>" + CRLF
+  buf = buf + sp[4] + LT + "/g>" + CR + LF
+  buf = buf + "  " + LT + "/defs>" + CR + LF
+  buf = buf + "  " + LT + "use x=" + xmin + " y=" + ymin + " xlink:href=" + WQ + "#g1" + WQ + " />" + CR + LF
+  buf = buf + LT + "/svg>" + CR + LF
   File_Save()
   i = Stack.PopValue("local")
 EndSub
@@ -1407,11 +1423,14 @@ Sub CS_AddColorToPalette
   ' param tPalette - target palette
   Stack.PushValue("local", i)
   For i = 1 To nPalette
-    If color = palette[i]["color"] Then
+    pltt = palette[i]
+    If color = pltt["color"] Then
       Goto csactp_not_new_color
     EndIf
   EndFor
-  palette[tPalette]["color"] = color
+  pltt = palette[tPalette]
+  pltt["color"] = color
+  palette[tPalette] = pltt
   If nPalette < maxPalette Then
     nPalette = nPalette + 1
   EndIf
@@ -1481,7 +1500,8 @@ Sub CS_DoPalette
   ' param obj - clicked object
   If Text.StartsWith(obj, "palette") Then
     iPalette = Text.GetSubTextToEnd(obj, 8)
-    color = palette[iPalette]["color"]
+    pltt = palette[iPalette]
+    color = pltt["color"]
     CS_SetColorToSlider()   ' set color to slider
     CS_ShowNewColor()       ' show new color name
     CS_DrawColorRect()      ' draw new color rectangle
@@ -1523,15 +1543,17 @@ Sub CS_DrawPalette
   Stack.PushValue("local", i)
   GraphicsWindow.PenColor = BORDERCOLOR
   For i = 1 To nPalette
-    GraphicsWindow.BrushColor = palette[i]["color"]
-    palette[i]["oCell"] = Shapes.AddRectangle(width, height)
+    pltt = palette[i]
+    GraphicsWindow.BrushColor = pltt["color"]
+    pltt["oCell"] = Shapes.AddRectangle(width, height)
     dx = Math.Remainder((i - 1), 8) * (width + 4)
     dy = Math.Floor((i - 1) / 8) * (height + 4)
-    Shapes.Move(palette[i]["oCell"], x + dx, y + dy)
-    palette[i]["x"] = x + dx
-    palette[i]["y"] = y + dy
-    palette[i]["width"] = width
-    palette[i]["height"] = height
+    Shapes.Move(pltt["oCell"], x + dx, y + dy)
+    pltt["x"] = x + dx
+    pltt["y"] = y + dy
+    pltt["width"] = width
+    pltt["height"] = height
+    palette[i] = pltt
   EndFor
   i = Stack.PopValue("local")
 EndSub
@@ -1628,8 +1650,12 @@ Sub CS_InitPalette
   maxPalette = 16 ' max cell number of palette
   nPalette = 2    ' number of palette in use
   tPalette = 3    ' index of update target cell
-  palette[1]["color"] = pcolor
-  palette[2]["color"] = bcolor
+  pltt = palette[1]
+  pltt["color"] = pcolor
+  palette[1] = pltt
+  pltt = palette[2]
+  pltt["color"] = bcolor
+  palette[2] = pltt
 EndSub
 Sub CS_RemovePalette
   ' Color Selector | Remove palette
@@ -1638,7 +1664,8 @@ Sub CS_RemovePalette
   Stack.PushValue("local", i)
   For i = 1 To nPalette
     oPalette = "Palette" + i
-    Shapes.Remove(palette[i]["oCell"])
+    pltt = palette[i]
+    Shapes.Remove(pltt["oCell"])
   EndFor
   i = Stack.PopValue("local")
 EndSub
@@ -1658,20 +1685,22 @@ Sub CS_SearchClickedObject
   Stack.PushValue("local", i)
   For iSlider = 1 To numSlider
     obj = "slider" + iSlider
-    x2 = slider[iSlider]["x2"]
-    y2 = slider[iSlider]["y2"]
-    x3 = slider[iSlider]["x3"]
-    y3 = slider[iSlider]["y3"]
+    sldr = slider[iSlider]
+    x2 = sldr["x2"]
+    y2 = sldr["y2"]
+    x3 = sldr["x3"]
+    y3 = sldr["y3"]
     If x2 <= mxD And mxD <= x3 And y2 <= myD And myD <= y3 Then
       Goto scco_obj_found
     EndIf
   EndFor
   For iPalette = 1 To nPalette
     obj = "palette" + iPalette
-    x2 = palette[iPalette]["x"]
-    y2 = palette[iPalette]["y"]
-    x3 = palette[iPalette]["x"] + palette[iPalette]["width"]
-    y3 = palette[iPalette]["y"] + palette[iPalette]["height"]
+    pltt = palette[iPalette]
+    x2 = pltt["x"]
+    y2 = pltt["y"]
+    x3 = pltt["x"] + pltt["width"]
+    y3 = pltt["y"] + pltt["height"]
     If x2 <= mxD And mxD <= x3 And y2 <= myD And myD <= y3 Then
       Goto scco_obj_found
     EndIf
@@ -1827,7 +1856,7 @@ Sub File_Open
         filename = Program.Directory + "\" + filename
       EndIf
       buf = ""
-      SB_AppendSub()
+      buf = File.ReadContents(filename)
       Controls.SetTextBoxText(oText, buf)
       typed = "False"
     Else
@@ -2074,6 +2103,301 @@ Sub Mouse_OnUp
     smrc = " released " + mxU + "," + myU
   EndIf
 EndSub
+Sub Parse_Defs
+  ' param buf - SVG buffer
+  ' param p - pointer to SVG buffer
+  ' return match - "True" if match
+  match = "False"
+  If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "defs>") Then
+    Stack.PushValue("local", p)
+    p = p + 6
+    Parse_Space()
+    match = "False"
+    If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "g id=" + WQ + "g1" + WQ + ">") Then
+      p = p + 11
+      match = "True"
+    EndIf
+    _p = Stack.PopValue("local")
+    If Not[match] Then
+      p = _p
+    EndIf
+  EndIf
+EndSub
+Sub Parse_Ellipse
+  ' param buf - SVG buffer
+  ' param p - pointer to SVG buffer
+  ' return match - "True" if match
+  ' return shp - shape entry
+  match = "False"
+  If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "ellipse") Then
+    param = "tag=ellipse;"
+    Parse_FindTag() ' p is updated
+    Parse_GetAttrAndText()
+    cx = attr["cx"]
+    cy = attr["cy"]
+    rx = attr["rx"]
+    ry = attr["ry"]
+    Parse_SetStyle()
+    shp = ""
+    shp["func"] = "ell"
+    shp["x"] = cx - rx - Math.Floor(pw / 2)
+    shp["y"] = cy - ry - Math.Floor(pw / 2)
+    shp["width"] = 2 * rx + pw
+    shp["height"] = 2 * ry + pw
+    shp["pw"] = pw
+    shp["pc"] = pc
+    shp["bc"] = bc
+    match = "True"
+  EndIf
+EndSub
+Sub Parse_FindTag
+  ' find tag from html buffer
+  ' param["tag"] - tag name
+  ' param["class"] - class name
+  ' param p - pointer for buffer
+  ' param buf - html buffer
+  ' return tag - found tag
+  pSave = p
+  tag = ""
+  findNext = "True"
+  While findNext
+    findNext = "False"        ' tag may be not found
+    pTag = Text.GetIndexOf(Text.GetSubTextToEnd(buf, p), LT + param["tag"])
+    If 0 < pTag Then
+      lTag = Text.GetLength(param["tag"]) + 1
+      pTag = p + pTag - 1
+      len = Text.GetIndexOf(Text.GetSubTextToEnd(buf, pTag), "/" + param["tag"] + ">")
+      If len = 0 Then
+        lTag = 1
+        len = Text.GetIndexOf(Text.GetSubTextToEnd(buf, pTag), "/>")
+      EndIf
+      If param["class"] = "" Then
+        len = len + lTag
+        tag = Text.GetSubText(buf, pTag, len)
+        findNext = "False"    ' found the tag
+      ElseIf 0 < len Then
+        findNext = "True"     ' tag may have different class
+        len = len + lTag
+        attr = "class=" + qt + param["class"] + qt
+        pAttr = pTag + lTag + 1
+        lAttr = Text.GetLength(attr)
+        If Text.GetSubText(buf, pAttr, lAttr) = attr Then
+          tag = Text.GetSubText(buf, pTag, len)
+          findNext = "False"  ' found the tag
+        EndIf
+      EndIf
+      p = pTag + len
+    EndIf
+  EndWhile
+  If tag = "" Then
+    p = pSave
+  EndIf
+EndSub
+Sub Parse_GetAttrAndText
+  ' get attributes and text from given tag
+  ' param tag - given tag
+  ' return attr[] - array of attributes in the tag
+  ' return txt - text in the tag
+  ' return len - length of the tag
+  pTag = Text.GetIndexOf(tag, " ") + 1
+  pEnd = Text.GetIndexOf(tag, ">")
+  attr = ""
+  While pTag <= pEnd
+    Parse_SkipSpaceInTag()
+    pEq = Text.GetIndexOf(Text.GetSubTextToEnd(tag, pTag), "=")
+    If 0 < pEq Then
+      pEq = pTag + pEq - 1
+      If Text.GetSubText(tag, pEq + 1, 1) = qt Then
+        pQ = Text.GetIndexOf(Text.GetSubTextToEnd(tag, pEq + 2), qt)
+        If 0 < pQ Then
+          pQ = pEq + 2 + pQ - 1
+          attr[Text.GetSubText(tag, pTag, pEq - pTag)] = Text.GetSubText(tag, pEq + 2, pQ - pEq - 2)
+          pTag = pQ + 2
+        EndIf
+      EndIf
+    Else
+      pTag = pEnd + 1
+    EndIf
+  EndWhile
+  If pEnd + 1 < pTag Then
+    pTag = pEnd + 1
+  EndIf
+  len = Text.GetLength(tag)
+  txt = ""
+  While pTag <= len
+    pL = Text.GetIndexOf(Text.GetSubTextToEnd(tag, pTag), LT)
+    If pL = 0 Then
+      txt = Text.Append(txt, Text.GetSubTextToEnd(tag, pTag))
+      pTag = len + 1
+    Else
+      pL = pTag + pL - 1
+      txt = Text.Append(txt, Text.GetSubText(tag, pTag, pL - pTag))
+      pR = Text.GetIndexOf(Text.GetSubTextToEnd(tag, pTag), ">")
+      If 0 < pR Then
+        pTag = pTag + pR
+      Else
+        pTag = len + 1
+      EndIf
+    EndIf  
+  EndWhile
+EndSub
+Sub Parse_GetStyleAttr
+  ' param kw - keyword
+  ' param attr["style"] - style attribute
+  ' param pStyle - pointer to search in style attribute
+  ' return value - value
+  pKw = Text.GetIndexOf(Text.GetSubTextToEnd(attr["style"], pStyle), kw)
+  If pKw = 0 Then
+    value = ""
+  Else
+    pValue = pStyle + pKw + Text.GetLength(kw)
+    pColon = Text.GetIndexOf(Text.GetSubTextToEnd(attr["style"], pValue), ";")
+    If pColon = 0 Then
+      pColon = Text.GetLength(kw) + 1
+    EndIf
+    value = Text.GetSubText(attr["style"], pValue, pColon - 1)
+  EndIf
+EndSub
+Sub Parse_Header
+  ' param buf - SVG buffer
+  ' param p - pointer to SVG buffer
+  ' return match - "True" if match
+  ' return shp - shape entry
+  If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "svg") Then
+    len = Text.GetIndexOf(Text.GetSubTextToEnd(buf, p), ">")
+    If 0 < len Then
+      tag = Text.GetSubText(buf, p, len)
+      Parse_GetAttrAndText()
+      width = attr["width"]
+      height = attr["height"]
+      p = p + len
+      match = "True"
+    EndIf
+  EndIf
+EndSub
+Sub Parse_Line
+  ' param buf - SVG buffer
+  ' param p - pointer to SVG buffer
+  ' return match - "True" if match
+  ' return shp - shape entry
+  match = "False"
+  If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "line") Then
+    param = "tag=line;"
+    Parse_FindTag() ' p is updated
+    Parse_GetAttrAndText()
+    Parse_SetStyle()
+    shp = ""
+    shp["func"] = "line"
+    shp["x1"] = attr["x1"]
+    shp["y1"] = attr["y1"]
+    shp["x2"] = attr["x2"]
+    shp["y2"] = attr["y2"]
+    shp["pw"] = pw
+    shp["pc"] = pc
+    match = "True"
+  EndIf
+EndSub
+Sub Parse_Polygon
+  ' param buf - SVG buffer
+  ' param p - pointer to SVG buffer
+  ' return match - "True" if match
+  ' return shp - shape entry
+  match = "False"
+  If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "polygon") Then
+    param = "tag=polygon;"
+    Parse_FindTag() ' p is updated
+    Parse_GetAttrAndText()
+    x = attr["x"]
+    y = attr["y"]
+    width = attr["width"]
+    height = attr["height"]
+    Parse_SetStyle()
+    shp = ""
+    shp["func"] = "tri"
+    shp["x"] = x - Math.Floor(pw / 2)
+    shp["y"] = y - Math.Floor(pw / 2)
+    shp["width"] = width + pw
+    shp["height"] = height + pw
+    shp["pw"] = pw
+    shp["pc"] = pc
+    shp["bc"] = bc
+    match = "True"
+  EndIf
+EndSub
+Sub Parse_SetStyle
+  pStyle = 1
+  kw = "fill"
+  Parse_GetStyleAttr()
+  bc = value
+  kw = "stroke"
+  Parse_GetStyleAttr()
+  pc = value
+  kw = "stroke-width"
+  Parse_GetStyleAttr()
+  pw = value
+EndSub
+Sub Parse_SkipSpaceInTag
+  ' param pTag - pointer to tag
+  ' param tag - tag
+  ' return pTag - updated pointer to tag
+  isSpace = "True"
+  While isSpace
+    char = Text.GetSubText(tag, pTag, 1)
+    If Text.IsSubText(" " + CR + LF, char) Then
+      pTag = pTag + 1
+    Else
+      isSpace = "False"
+    EndIf
+  EndWhile
+EndSub
+Sub Parse_Space
+  ' param p - pointer to buffer
+  ' param buf - buffer
+  ' return p - updated pointer to buffer
+  isSpace = "True"
+  While isSpace
+    char = Text.GetSubText(buf, p, 1)
+    If Text.IsSubText(" " + CR + LF, char) Then
+      p = p + 1
+    Else
+      isSpace = "False"
+    EndIf
+  EndWhile
+EndSub
+Sub Parse_Rect
+  ' param buf - SVG buffer
+  ' param p - pointer to SVG buffer
+  ' return match - "True" if match
+  ' return shp - shape entry
+  match = "False"
+  If Text.StartsWith(Text.GetSubTextToEnd(buf, p), LT + "rect") Then
+    param = "tag=rect;"
+    Parse_FindTag() ' p is updated
+    Parse_GetAttrAndText()
+    x = attr["x"]
+    y = attr["y"]
+    width = attr["width"]
+    height = attr["height"]
+    Parse_SetStyle()
+    shp = ""
+    shp["func"] = "rect"
+    shp["x"] = x - Math.Floor(pw / 2)
+    shp["y"] = y - Math.Floor(pw / 2)
+    shp["width"] = width + pw
+    shp["height"] = height + pw
+    shp["pw"] = pw
+    shp["pc"] = pc
+    shp["bc"] = bc
+    match = "True"
+  EndIf
+EndSub
+Sub Parse_Use
+  param = "tag=use;"
+  Parse_FindTag() ' p is updated
+  Parse_GetAttrAndText()
+  shX = attr["x"]
+  shY = attr["y"]
+EndSub
 Sub Popup_Init
   TOPY = 10   ' top y
   LEFTX = 10  ' left x
@@ -2087,68 +2411,18 @@ Sub Popup_Init
   SLITCOLOR = "#555555"
   UNDEFINED = "N/A"
 EndSub
-Sub SB_AppendSub
-  ' Small Basic | Append subroutine from Small Basic source file
-  ' param filename - file name
-  ' param subname - subroutine name
-  ' return buf - subroutine buffer
-  len = Text.GetLength(subname)
-  _buf = "" ' for Slilverlight
-  _buf = File.ReadContents(filename)
-  ptr = 1
-  notFound = "True"
-  While notFound
-    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(_buf, ptr), "Sub")
-    If _ptr = 0 Then
-      _buf = ""
-      Goto sbas_exit
-    EndIf
-    ptrSub = ptr + _ptr - 1
-    ptr = ptrSub + 3
-    While Text.GetSubText(_buf, ptr, 1) = " "
-      ptr = ptr + 1
-    EndWhile
-    If Text.GetSubText(_buf, ptr, len) = subname And Text.IsSubText(TCHAR, Text.GetSubText(_buf, ptr + len, 1)) = "False" Then
-      notFound = "False"
-    EndIf
-  EndWhile
-  _ptre = _ptr - 1
-  _ptrq = _ptr
-  While (0 < _ptrq) And (_ptre < _ptrq) ' EOL exists before single quote (comment)
-    _ptr = Text.GetIndexOf(Text.GetSubTextToEnd(_buf, ptr), "EndSub")
-    If _ptr = 0 Then
-      buf = ""
-      Goto sbas_exit
-    EndIf
-    _ptre = ptr + _ptr - 3
-    While (1 <= _ptre) And (Text.GetSubText(_buf, _ptre, 2) <> CRLF)
-      _ptre = _ptre - 1
-    EndWhile
-    _ptrq = ptr + _ptr - 2
-    While (1 <= _ptrq) And (Text.GetSubText(_buf, _ptrq, 1) <> "'")
-      _ptrq = _ptrq - 1
-    EndWhile
-    If (0 < _ptrq) And (_ptre < _ptrq) Then
-      ptr = ptr + _ptr + 5
-    EndIf
-  EndWhile
-  ptrEndSub = ptr + _ptr - 1
-  ptr = ptrEndSub + 6
-  len = ptr - ptrSub
-  buf = buf + Text.GetSubText(_buf, ptrSub, len)
-  sbas_exit:
-EndSub
 Sub SB_RotateWorkaround
   ' Small Basic | Rotate workaround for Silverlight
+  ' param shp - current shape
   ' param x, y - original coordinate
   ' param alpha - angle [radian]
   ' returns x, y - workaround coordinate
-  If shape[i]["func"] = "tri" Then
-    x1 = -Math.Floor(shape[i]["x3"] / 2)
-    y1 = -Math.Floor(shape[i]["y3"] / 2)
-  ElseIf shape[i]["func"] = "line" Then
-    x1 = -Math.Floor(Math.Abs(shape[i]["x1"] - shape[i]["x2"]) / 2)
-    y1 = -Math.Floor(Math.Abs(shape[i]["y1"] - shape[i]["y2"]) / 2)
+  If shp["func"] = "tri" Then
+    x1 = -Math.Floor(shp["x3"] / 2)
+    y1 = -Math.Floor(shp["y3"] / 2)
+  ElseIf shp["func"] = "line" Then
+    x1 = -Math.Floor(Math.Abs(shp["x1"] - shp["x2"]) / 2)
+    y1 = -Math.Floor(Math.Abs(shp["y1"] - shp["y2"]) / 2)
   EndIf
   ox = x - x1
   oy = y - y1
@@ -2167,7 +2441,7 @@ Sub SB_Workaround
   EndIf
 EndSub
 Sub Shapes_Init
-  ' Scissors | Initialize shapes data for menu icon
+  ' Shapes | Initialize scissors shapes data for menu icon
   ' return shX, shY - current position of shapes
   ' return shape - array of shapes
   shX = 230 ' x offset
@@ -2194,45 +2468,47 @@ Sub Shapes_Add
   Shapes_CalcWidthAndHeight()
   s = scale
   For i = iMin To iMax
-    GraphicsWindow.PenWidth = shape[i]["pw"] * s
-    If shape[i]["pw"] > 0 Then
-      GraphicsWindow.PenColor = shape[i]["pc"]
+    shp = shape[i]
+    GraphicsWindow.PenWidth = shp["pw"] * s
+    If shp["pw"] > 0 Then
+      GraphicsWindow.PenColor = shp["pc"]
     EndIf
-    If Text.IsSubText("rect|ell|tri|text", shape[i]["func"]) Then
-      GraphicsWindow.BrushColor = shape[i]["bc"]
+    If Text.IsSubText("rect|ell|tri|text", shp["func"]) Then
+      GraphicsWindow.BrushColor = shp["bc"]
     EndIf
-    If shape[i]["func"] = "rect" Then
-      shape[i]["obj"] = Shapes.AddRectangle(shape[i]["width"] * s, shape[i]["height"] * s)
-    ElseIf shape[i]["func"] = "ell" Then
-      shape[i]["obj"] = Shapes.AddEllipse(shape[i]["width"] * s, shape[i]["height"] * s)
-    ElseIf shape[i]["func"] = "tri" Then
-      shape[i]["obj"] = Shapes.AddTriangle(shape[i]["x1"] * s, shape[i]["y1"] * s, shape[i]["x2"] * s, shape[i]["y2"] * s, shape[i]["x3"] * s, shape[i]["y3"] * s)
-    ElseIf shape[i]["func"] = "line" Then
-      shape[i]["obj"] = Shapes.AddLine(shape[i]["x1"] * s, shape[i]["y1"] * s, shape[i]["x2"] * s, shape[i]["y2"] * s)
-    ElseIf shape[i]["func"] = "text" Then
+    If shp["func"] = "rect" Then
+      shp["obj"] = Shapes.AddRectangle(shp["width"] * s, shp["height"] * s)
+    ElseIf shp["func"] = "ell" Then
+      shp["obj"] = Shapes.AddEllipse(shp["width"] * s, shp["height"] * s)
+    ElseIf shp["func"] = "tri" Then
+      shp["obj"] = Shapes.AddTriangle(shp["x1"] * s, shp["y1"] * s, shp["x2"] * s, shp["y2"] * s, shp["x3"] * s, shp["y3"] * s)
+    ElseIf shp["func"] = "line" Then
+      shp["obj"] = Shapes.AddLine(shp["x1"] * s, shp["y1"] * s, shp["x2"] * s, shp["y2"] * s)
+    ElseIf shp["func"] = "text" Then
       If silverlight Then
-        fs = Math.Floor(shape[i]["fs"] * 0.9)
+        fs = Math.Floor(shp["fs"] * 0.9)
       Else
-        fs = shape[i]["fs"]
+        fs = shp["fs"]
       EndIf
       GraphicsWindow.FontSize = fs * s
-      GraphicsWindow.FontName = shape[i]["fn"]
-      shape[i]["obj"] = Shapes.AddText(shape[i]["text"])
+      GraphicsWindow.FontName = shp["fn"]
+      shp["obj"] = Shapes.AddText(shp["text"])
     EndIf
-    x = shape[i]["x"]
-    y = shape[i]["y"]
-    shape[i]["rx"] = x
-    shape[i]["ry"] = y
-    If silverlight And Text.IsSubText("tri|line", shape[i]["func"]) Then
-      alpha = Math.GetRadians(shape[i]["angle"])
+    x = shp["x"]
+    y = shp["y"]
+    shp["rx"] = x
+    shp["ry"] = y
+    If silverlight And Text.IsSubText("tri|line", shp["func"]) Then
+      alpha = Math.GetRadians(shp["angle"])
       SB_RotateWorkaround()
-      shape[i]["wx"] = x
-      shape[i]["wy"] = y
+      shp["wx"] = x
+      shp["wy"] = y
     EndIf
-    Shapes.Move(shape[i]["obj"], shX + x * s, shY + y * s)
-    If Text.IsSubText("rect|ell|tri|text", shape[i]["func"]) And (shape[i]["angle"] <> 0) And (shape[i]["angle"] <> "") Then
-      Shapes.Rotate(shape[i]["obj"], shape[i]["angle"])
+    Shapes.Move(shp["obj"], shX + x * s, shY + y * s)
+    If Text.IsSubText("rect|ell|tri|text", shp["func"]) And (shp["angle"] <> 0) And (shp["angle"] <> "") Then
+      Shapes.Rotate(shp["obj"], shp["angle"])
     EndIf
+    shape[i] = shp
   EndFor
   shAngle = 0
   y = Stack.PopValue("local")
@@ -2264,51 +2540,53 @@ Sub Shapes_CalcWidthAndHeight
   ' param iMin, iMax - shape indices to add
   ' return shWidth, shHeight - total size of shapes
   For i = iMin To iMax
-    If shape[i]["func"] = "tri" Or shape[i]["func"] = "line" Then
-      xmin = shape[i]["x1"]
-      xmax = shape[i]["x1"]
-      ymin = shape[i]["y1"]
-      ymax = shape[i]["y1"]
-      If shape[i]["x2"] < xmin Then
-        xmin = shape[i]["x2"]
+    shp = shape[i]
+    If shp["func"] = "tri" Or shp["func"] = "line" Then
+      xmin = shp["x1"]
+      xmax = shp["x1"]
+      ymin = shp["y1"]
+      ymax = shp["y1"]
+      If shp["x2"] < xmin Then
+        xmin = shp["x2"]
       EndIf
-      If xmax < shape[i]["x2"] Then
-        xmax = shape[i]["x2"]
+      If xmax < shp["x2"] Then
+        xmax = shp["x2"]
       EndIf
-      If shape[i]["y2"] < ymin Then
-        ymin = shape[i]["y2"]
+      If shp["y2"] < ymin Then
+        ymin = shp["y2"]
       EndIf
-      If ymax < shape[i]["y2"] Then
-        ymax = shape[i]["y2"]
+      If ymax < shp["y2"] Then
+        ymax = shp["y2"]
       EndIf
-      If shape[i]["func"] = "tri" Then
-        If shape[i]["x3"] < xmin Then
-          xmin = shape[i]["x3"]
+      If shp["func"] = "tri" Then
+        If shp["x3"] < xmin Then
+          xmin = shp["x3"]
         EndIf
-        If xmax < shape[i]["x3"] Then
-          xmax = shape[i]["x3"]
+        If xmax < shp["x3"] Then
+          xmax = shp["x3"]
         EndIf
-        If shape[i]["y3"] < ymin Then
-          ymin = shape[i]["y3"]
+        If shp["y3"] < ymin Then
+          ymin = shp["y3"]
         EndIf
-        If ymax < shape[i]["y3"] Then
-          ymax = shape[i]["y3"]
+        If ymax < shp["y3"] Then
+          ymax = shp["y3"]
         EndIf
       EndIf
-      shape[i]["width"] = xmax - xmin
-      shape[i]["height"] = ymax - ymin
+      shp["width"] = xmax - xmin
+      shp["height"] = ymax - ymin
     EndIf
     If i = 1 Then
-      shWidth = shape[i]["x"] + shape[i]["width"]
-      shHeight = shape[i]["y"] + shape[i]["height"]
+      shWidth = shp["x"] + shp["width"]
+      shHeight = shp["y"] + shp["height"]
     Else
-      If shWidth < shape[i]["x"] + shape[i]["width"] Then
-        shWidth = shape[i]["x"] + shape[i]["width"]
+      If shWidth < shp["x"] + shp["width"] Then
+        shWidth = shp["x"] + shp["width"]
       EndIf
-      If shHeight < shape[i]["y"] + shape[i]["height"] Then
-        shHeight = shape[i]["y"] + shape[i]["height"]
+      If shHeight < shp["y"] + shp["height"] Then
+        shHeight = shp["y"] + shp["height"]
       EndIf
     EndIf
+    shape[i] = shp
   EndFor
 EndSub
 Sub Shapes_Move
@@ -2323,14 +2601,15 @@ Sub Shapes_Move
   shX = x
   shY = y
   For i = iMin To iMax
-    If silverlight And Text.IsSubText("tri|line", shape[i]["func"]) Then
-      _x = shape[i]["wx"]
-      _y = shape[i]["wy"]
+    shp = shape[i]
+    If silverlight And Text.IsSubText("tri|line", shp["func"]) Then
+      _x = shp["wx"]
+      _y = shp["wy"]
     Else
-      _x = shape[i]["rx"]
-      _y = shape[i]["ry"]
+      _x = shp["rx"]
+      _y = shp["ry"]
     EndIf
-    Shapes.Move(shape[i]["obj"], shX + _x * s, shY + _y * s)
+    Shapes.Move(shp["obj"], shX + _x * s, shY + _y * s)
   EndFor
   i = Stack.PopValue("local")
 EndSub
@@ -2340,7 +2619,8 @@ Sub Shapes_Remove
   ' param shape - array of shapes
   Stack.PushValue("local", i)
   For i = iMin To iMax
-    Shapes.Remove(shape[i]["obj"])
+    shp = shape[i]
+    Shapes.Remove(shp["obj"])
   EndFor
   i = Stack.PopValue("local")
 EndSub
@@ -2358,21 +2638,23 @@ Sub Shapes_Rotate
   param["cx"] = shWidth / 2
   param["cy"] = shHeight / 2
   For i = iMin To iMax
-    param["x"] = shape[i]["x"]
-    param["y"] = shape[i]["y"]
-    param["width"] = shape[i]["width"]
-    param["height"] = shape[i]["height"]
+    shp = shape[i]
+    param["x"] = shp["x"]
+    param["y"] = shp["y"]
+    param["width"] = shp["width"]
+    param["height"] = shp["height"]
     Shapes_CalcRotatePos()
-    shape[i]["rx"] = x
-    shape[i]["ry"] = y
-    If silverlight And Text.IsSubText("tri|line", shape[i]["func"]) Then
-      alpha = Math.GetRadians(angle + shape[i]["angle"])
+    shp["rx"] = x
+    shp["ry"] = y
+    If silverlight And Text.IsSubText("tri|line", shp["func"]) Then
+      alpha = Math.GetRadians(angle + shp["angle"])
       SB_RotateWorkAround()
-      shape[i]["wx"] = x
-      shape[i]["wy"] = y
+      shp["wx"] = x
+      shp["wy"] = y
     EndIf
-    Shapes.Move(shape[i]["obj"], shX + x * s, shY + y * s)
-    Shapes.Rotate(shape[i]["obj"], angle + shape[i]["angle"])
+    Shapes.Move(shp["obj"], shX + x * s, shY + y * s)
+    Shapes.Rotate(shp["obj"], angle + shp["angle"])
+    shape[i] = shp
   EndFor
   y = Stack.PopValue("local")
   x = Stack.PopValue("local")
@@ -2391,27 +2673,29 @@ Sub Slider_Add
   ' add shapes for slider
   GraphicsWindow.BrushColor = CAPTIONCOLOR
   len = Text.GetLength(caption)
-  slider[iSlider]["oCaption"] = Shapes.AddText(caption)
-  Shapes.Move(slider[iSlider]["oCaption"], left - (len * 5 + 10), top + 1)
+  sldr = slider[iSlider]
+  sldr["oCaption"] = Shapes.AddText(caption)
+  Shapes.Move(sldr["oCaption"], left - (len * 5 + 10), top + 1)
   level = Math.Floor((min + max) / 2)
-  slider[iSlider]["level"] = level  ' property
-  slider[iSlider]["min"] = min
-  slider[iSlider]["max"] = max
+  sldr["level"] = level  ' property
+  sldr["min"] = min
+  sldr["max"] = max
   GraphicsWindow.PenColor = BORDERCOLOR
   mag = (level - min) / (max - min)
   GraphicsWindow.BrushColor = SLITCOLOR
-  slider[iSlider]["oSlit"] = Shapes.AddRectangle(width, 10)
+  sldr["oSlit"] = Shapes.AddRectangle(width, 10)
   GraphicsWindow.PenColor = BORDERCOLOR
   GraphicsWindow.BrushColor = BOXCOLOR
-  slider[iSlider]["oBox"] = Shapes.AddRectangle(10, 18)
+  sldr["oBox"] = Shapes.AddRectangle(10, 18)
   GraphicsWindow.BrushColor = CAPTIONCOLOR
-  slider[iSlider]["oLevel"] = Shapes.AddText(level)
-  slider[iSlider]["x0"] = left
-  slider[iSlider]["x1"] = left + width
-  slider[iSlider]["y0"] = top
-  Shapes.Move(slider[iSlider]["oLevel"], left + width + 5, top)
+  sldr["oLevel"] = Shapes.AddText(level)
+  sldr["x0"] = left
+  sldr["x1"] = left + width
+  sldr["y0"] = top
+  Shapes.Move(sldr["oLevel"], left + width + 5, top)
   ' move and zoom shapes for slider
-  Shapes.Move(slider[iSlider]["oSlit"], left, top + 4)
+  Shapes.Move(sldr["oSlit"], left, top + 4)
+  slider[iSlider] = sldr
   Slider_SetLevel()
 EndSub
 Sub Slider_CallBack
@@ -2426,16 +2710,18 @@ Sub Slider_GetLevel
   ' Slider | Get latest level of slider
   ' param iSlider
   ' return level
-  level = slider[iSlider]["level"]
+  sldr = slider[iSlider]
+  level = sldr["level"]
 EndSub
 Sub Slider_GetMouseLevel
   ' Slider | Get mouse level of slider
   ' param iSlider
   ' return level
-  x0 = slider[iSlider]["x0"]
-  x1 = slider[iSlider]["x1"]
-  max = slider[iSlider]["max"]
-  min = slider[iSlider]["min"]
+  sldr = slider[iSlider]
+  x0 = sldr["x0"]
+  x1 = sldr["x1"]
+  max = sldr["max"]
+  min = sldr["min"]
   level = min + Math.Floor((max - min) * (mxM - x0) / (x1 - x0))
 EndSub
 Sub Slider_WaitToRelease
@@ -2447,8 +2733,9 @@ Sub Slider_WaitToRelease
     If moved Then
       param = "move=False;"  ' while slider moving
       Mouse_SetHandler()
-      x0_ = slider[iSlider]["x0"]
-      x1_ = slider[iSlider]["x1"]
+      sldr = slider[iSlider]
+      x0_ = sldr["x0"]
+      x1_ = sldr["x1"]
       If mxM < x0_ Then
         mxM = x0_
       EndIf
@@ -2470,31 +2757,35 @@ EndSub
 Sub Slider_Remove
   ' Slider | Remove a slider
   ' param iSlider
-  Shapes.Remove(slider[iSlider]["oCaption"])
-  Shapes.Remove(slider[iSlider]["oSlit"])
-  Shapes.Remove(slider[iSlider]["oBox"])
-  Shapes.Remove(slider[iSlider]["oLevel"])
+  sldr = slider[iSlider]
+  Shapes.Remove(sldr["oCaption"])
+  Shapes.Remove(sldr["oSlit"])
+  Shapes.Remove(sldr["oBox"])
+  Shapes.Remove(sldr["oLevel"])
 EndSub
 Sub Slider_SetLevel
   ' Slider | Set slider level and move slider box
   ' param iSlider
   ' param level
   Stack.PushValue("local", width)
-  x0 = slider[iSlider]["x0"]
-  x1 = slider[iSlider]["x1"]
-  y0 = slider[iSlider]["y0"]
+  sldr = slider[iSlider]
+  x0 = sldr["x0"]
+  x1 = sldr["x1"]
+  y0 = sldr["y0"]
   width = x1 - x0
-  slider[iSlider]["level"] = level
-  Shapes.SetText(slider[iSlider]["oLevel"], level)
+  sldr["level"] = level
+  Shapes.SetText(sldr["oLevel"], level)
   ' move bar
-  min = slider[iSlider]["min"]
-  max = slider[iSlider]["max"]
+  min = sldr["min"]
+  max = sldr["max"]
   mag = (level - min) / (max - min)
   ' move box
-  Shapes.Move(slider[iSlider]["oBox"], x0 + Math.Floor(width * mag) - 5, y0)
-  slider[iSlider]["x2"] = x0 + Math.Floor(width * mag) - 5
-  slider[iSlider]["x3"] = x0 + Math.Floor(width * mag) - 5 + 10
-  slider[iSlider]["y2"] = y0
-  slider[iSlider]["y3"] = y0 + 18
+  Shapes.Move(sldr["oBox"], x0 + Math.Floor(width * mag) - 5, y0)
+  sldr["x2"] = x0 + Math.Floor(width * mag) - 5
+  sldr["x3"] = x0 + Math.Floor(width * mag) - 5 + 10
+  sldr["y2"] = y0
+  sldr["y3"] = y0 + 18
+  slider[iSlider] = sldr
   width = Stack.PopValue("local")
 EndSub
+  
