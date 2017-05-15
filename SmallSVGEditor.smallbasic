@@ -1,8 +1,7 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.85b
+' Version 1.9b
 ' Repository https://github.com/nonkit/SmallSVGEditor
-' Program ID TLW744-4
 ' Last update 2014-11-26
 '
 ' History:
@@ -15,17 +14,14 @@
 '  [ ] Refine to avoid Publish error (too large)
 '  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
 '  [ ] Sort subroutines
-'  [✔] Bug fix for Silverlight:  Save icon not displayed
-'  [ ] Bug fix for Silverlight:  Paste icon not displayed
+'  [✔] Bug fix for Silverlight:  Paste icon not displayed
 '  [ ] Bug fix for Silverlight:  Lines come different place
 '  [ ] Bug fix for Silverlight:  Lines move after click
 '  [ ] Bug fix for Silverlight:  Rotated triangles move after click
-'  [ ] Bug fix for Silverlight:  SVG has fraction numbers
-'  [ ] Bug fix for Silverlight:  SVG has color #FFrrggbb
-'  [✔] Bug fix for Silverlight:  Color popup shows #FFrrggbb
-'  [✔] Refine grid graphics
+'  [✔] Bug fix for Silverlight:  SVG has fraction numbers
+'  [✔] Bug fix for Silverlight:  SVG has color #FFrrggbb
 '
-title = "Small SVG Editor 1.85b"
+title = "Small SVG Editor 1.9b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -1103,7 +1099,7 @@ Sub WaitToReleaseR ' for rotating a shape
   Shapes.Move(oFrame[func], _x, _y)
   While released = "False"
     If moved Then
-      param = "move=False;"   ' while sizing a shape
+      param = "move=False;"       ' while sizing a shape
       Mouse_SetHandler()
       x = mxM - cx
       y = myM - cy
