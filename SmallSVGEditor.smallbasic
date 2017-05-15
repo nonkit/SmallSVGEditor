@@ -1,6 +1,6 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.92b
+' Version 1.93b
 ' Repository https://git01.codeplex.com/smallsvgeditor
 ' Last update 2014-11-27
 '
@@ -20,7 +20,7 @@
 '  [ ] Bug fix for Silverlight:  Lines move after click
 '  [ ] Bug fix for Silverlight:  Rotated triangles move after click
 '
-title = "Small SVG Editor 1.92b"
+title = "Small SVG Editor 1.93b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
