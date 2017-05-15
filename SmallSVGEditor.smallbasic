@@ -1,8 +1,8 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.9b
-' Repository https://github.com/nonkit/SmallSVGEditor
-' Last update 2014-11-26
+' Version 1.91b
+' Repository https://smallsvgeditor.codeplex.com/
+' Last update 2014-11-27
 '
 ' History:
 '  - Created from Shapes 1.7b.
@@ -10,18 +10,17 @@
 '  - Supported SVG (only) for Save.
 '
 ' TODO:
+'  [ ] Support grouping tag (element), defs tag and use tag
+'  [ ] Support text tag (element)
+'  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
 '  [ ] Check illegal behavior in Silverlight environment
 '  [ ] Refine to avoid Publish error (too large)
-'  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
 '  [ ] Sort subroutines
-'  [✔] Bug fix for Silverlight:  Paste icon not displayed
 '  [ ] Bug fix for Silverlight:  Lines come different place
 '  [ ] Bug fix for Silverlight:  Lines move after click
 '  [ ] Bug fix for Silverlight:  Rotated triangles move after click
-'  [✔] Bug fix for Silverlight:  SVG has fraction numbers
-'  [✔] Bug fix for Silverlight:  SVG has color #FFrrggbb
 '
-title = "Small SVG Editor 1.9b"
+title = "Small SVG Editor 1.91b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
