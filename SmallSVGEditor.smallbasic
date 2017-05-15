@@ -1,8 +1,9 @@
 ' Small SVG Editor
 ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.94b
+' Version 1.95b
 ' Repository https://git01.codeplex.com/smallsvgeditor
 ' Last update 2014-11-27
+' Program ID TLW744-5
 '
 ' History:
 '  - Created from Shapes 1.7b.
@@ -10,7 +11,7 @@
 '  - Supported SVG (only) for Save.
 '
 ' TODO:
-'  [ ] Support grouping tag (element), defs tag and use tag
+'  [✔] Support grouping tag (element), defs tag and use tag
 '  [ ] Support text tag (element)
 '  [ ] Change file format from .sb (.smallbasic) to .svg in ReadShapes
 '  [ ] Check illegal behavior in Silverlight environment
@@ -20,7 +21,7 @@
 '  [ ] Bug fix for Silverlight:  Lines move after click
 '  [ ] Bug fix for Silverlight:  Rotated triangles move after click
 '
-title = "Small SVG Editor 1.94b"
+title = "Small SVG Editor 1.95b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -1182,27 +1183,52 @@ Sub WaitToReleaseS  ' for sizing a shape
 EndSub
 Sub WriteShapes
   Stack.PushValue("local", i)
+  sp[4] = "    "
+  sp[6] = "      "
+  sp[8] = "        "
   buf = LT + "svg width=" + WQ + gw + WQ + " "
   buf = buf + "height=" + WQ + gh + WQ + ">" + CRLF
+  buf = buf + "  " + LT + "defs>" + CRLF
+  buf = buf + sp[4] + LT + "g id=" + WQ + "g1" + WQ + ">" + CRLF
+  If nShapes > 0 Then
+    xmin = shape[1]["x"]
+    ymin = shape[1]["y"]
+    xmax = shape[1]["x"]
+    ymax = shape[1]["y"]
+  EndIf
+  For i = 2 To nShapes
+    If shape[i]["x"] < xmin Then
+      xmin = shape[i]["x"]
+    EndIf
+    If shape[i]["y"] < ymin Then
+      ymin = shape[i]["y"]
+    EndIf
+    If xmax < shape[i]["x"] Then
+      xmax = shape[i]["x"]
+    EndIf
+    If ymax < shape[i]["y"] Then
+      ymax = shape[i]["y"]
+    EndIf
+  EndFor
   For i = 1 To nShapes
     If shape[i]["func"] = "rect" Then
-      buf = buf + "  " + LT + "rect "
-      buf = buf + "x=" + WQ + Math.Floor(shape[i]["x"] + shape[i]["pw"] / 2) + WQ + " "
-      buf = buf + "y=" + WQ + Math.Floor(shape[i]["y"] + shape[i]["pw"] / 2) + WQ + " "
+      buf = buf + sp[6] + LT + "rect "
+      buf = buf + "x=" + WQ + Math.Floor(shape[i]["x"] + shape[i]["pw"] / 2 - xmin) + WQ + " "
+      buf = buf + "y=" + WQ + Math.Floor(shape[i]["y"] + shape[i]["pw"] / 2 - ymin) + WQ + " "
       buf = buf + "width=" + WQ + (shape[i]["width"] - shape[i]["pw"]) + WQ + " "
       buf = buf + "height=" + WQ + (shape[i]["height"] - shape[i]["pw"]) + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + CRLF + "    "
+        buf = buf + CRLF + sp[8]
         buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + Math.Floor(shape[i]["width"] / 2 + shape[i]["x"]) + " "
-        buf = buf + Math.Floor(shape[i]["height"] / 2 + shape[i]["y"]) + ")" + WQ + " "
+        buf = buf + Math.Floor(shape[i]["width"] / 2 + shape[i]["x"] - xmin) + " "
+        buf = buf + Math.Floor(shape[i]["height"] / 2 + shape[i]["y"] - ymin) + ")" + WQ + " "
       EndIf
-      buf = buf + CRLF + "    "
+      buf = buf + CRLF + sp[8]
       buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
     ElseIf shape[i]["func"] = "ell" Then
-      buf = buf + "  " + LT + "ellipse "
-      cx = Math.Floor(shape[i]["width"] / 2 + shape[i]["x"])
-      cy = Math.Floor(shape[i]["height"] / 2 + shape[i]["y"])
+      buf = buf + sp[6] + LT + "ellipse "
+      cx = Math.Floor(shape[i]["width"] / 2 + shape[i]["x"] - xmin)
+      cy = Math.Floor(shape[i]["height"] / 2 + shape[i]["y"] - ymin)
       rx = Math.Floor((shape[i]["width"] - shape[i]["pw"]) / 2)
       ry = Math.Floor((shape[i]["height"] - shape[i]["pw"]) / 2)
       buf = buf + "cx=" + WQ + cx + WQ + " "
@@ -1210,36 +1236,36 @@ Sub WriteShapes
       buf = buf + "rx=" + WQ + rx + WQ + " "
       buf = buf + "ry=" + WQ + ry + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + CRLF + "    "
+        buf = buf + CRLF + sp[8]
         buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
         buf = buf + cx + " "
         buf = buf + cy + ")" + WQ + " "
       EndIf
-      buf = buf + CRLF + "    "
+      buf = buf + CRLF + sp[8]
       buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
     ElseIf shape[i]["func"] = "tri" Then
-      buf = buf + "  " + LT + "polygon points=" + WQ
-      buf = buf + (shape[i]["x1"] + shape[i]["x"]) + ","
-      buf = buf + (shape[i]["y1"] + shape[i]["y"]) + " "
-      buf = buf + (shape[i]["x2"] + shape[i]["x"]) + ","
-      buf = buf + (shape[i]["y2"] + shape[i]["y"]) + " "
-      buf = buf + (shape[i]["x3"] + shape[i]["x"]) + ","
-      buf = buf + (shape[i]["y3"] + shape[i]["y"]) + WQ + " "
+      buf = buf + sp[6] + LT + "polygon points=" + WQ
+      buf = buf + (shape[i]["x1"] + shape[i]["x"] - xmin) + ","
+      buf = buf + (shape[i]["y1"] + shape[i]["y"] - ymin) + " "
+      buf = buf + (shape[i]["x2"] + shape[i]["x"] - xmin) + ","
+      buf = buf + (shape[i]["y2"] + shape[i]["y"] - ymin) + " "
+      buf = buf + (shape[i]["x3"] + shape[i]["x"] - xmin) + ","
+      buf = buf + (shape[i]["y3"] + shape[i]["y"] - ymin) + WQ + " "
       If shape[i]["angle"] <> 0 And shape[i]["angle"] <> "" Then
-        buf = buf + CRLF + "    "
+        buf = buf + CRLF + sp[8]
         buf = buf + "transform=" + WQ + "rotate(" + shape[i]["angle"] + " "
-        buf = buf + (shape[i]["x1"] + shape[i]["x"]) + " "
-        buf = buf + Math.Floor((shape[i]["y2"] - shape[i]["y1"]) / 2 + shape[i]["y"]) + ")" + WQ + " "
+        buf = buf + (shape[i]["x1"] + shape[i]["x"] - xmin) + " "
+        buf = buf + Math.Floor((shape[i]["y2"] - shape[i]["y1"]) / 2 + shape[i]["y"] - ymin) + ")" + WQ + " "
       EndIf
-      buf = buf + CRLF + "    "
+      buf = buf + CRLF + sp[8]
       buf = buf + "style=" + WQ + "fill:" + Text.ConvertToLowerCase(shape[i]["bc"]) + ";"
     ElseIf shape[i]["func"] = "line" Then
-      buf = buf + "  " + LT + "line "
-      buf = buf + "x1=" + WQ + (shape[i]["x1"] + shape[i]["x"]) + WQ + " "
-      buf = buf + "y1=" + WQ + (shape[i]["y1"] + shape[i]["y"]) + WQ + " "
-      buf = buf + "x2=" + WQ + (shape[i]["x2"] + shape[i]["x"]) + WQ + " "
-      buf = buf + "y2=" + WQ + (shape[i]["y2"] + shape[i]["y"]) + WQ + " "
-      buf = buf + CRLF + "    "
+      buf = buf + sp[6] + LT + "line "
+      buf = buf + "x1=" + WQ + (shape[i]["x1"] + shape[i]["x"] - xmin) + WQ + " "
+      buf = buf + "y1=" + WQ + (shape[i]["y1"] + shape[i]["y"] - ymin) + WQ + " "
+      buf = buf + "x2=" + WQ + (shape[i]["x2"] + shape[i]["x"] - xmin) + WQ + " "
+      buf = buf + "y2=" + WQ + (shape[i]["y2"] + shape[i]["y"] - ymin) + WQ + " "
+      buf = buf + CRLF + sp[8]
       buf = buf + "style=" + WQ
     EndIf
     If shape[i]["pw"] > 0 Then
@@ -1247,6 +1273,9 @@ Sub WriteShapes
     EndIf
     buf = buf + "stroke-width:" + shape[i]["pw"] + WQ + "/>" + CRLF
   EndFor
+  buf = buf + sp[4] + LT + "/g>" + CRLF
+  buf = buf + "  " + LT + "/defs>" + CRLF
+  buf = buf + "  " + LT + "use x=" + xmin + " y=" + ymin + " xlink:href=" + WQ + "#g1" + WQ + " />" + CRLF
   buf = buf + LT + "/svg>" + CRLF
   File_Save()
   i = Stack.PopValue("local")
@@ -2469,4 +2498,3 @@ Sub Slider_SetLevel
   slider[iSlider]["y3"] = y0 + 18
   width = Stack.PopValue("local")
 EndSub
-  
