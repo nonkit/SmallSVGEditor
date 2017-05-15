@@ -1,12 +1,12 @@
 Module SmallSVGEditorModule
-    Dim title, debug, gw, gh, __Not, WQ, qt, CR, LF, LT, UPPER, LOWER, DIGIT, LCHAR, TCHAR, shape, nShapes, cont, param, clicked, __in, out, c, obj, icut, icopy, ipaste, selectedshape, i, __select, shp, _x, arrow_dx, _y, arrow_dy, x, y, a, cx, cy, len, width, height, angle, mxM, myM, mxD, myD, _i, nPinch, pnch, pinch, r, nMenu, mnu, menu, func, selecteditem, mode, repeat, clipboard, index, iMin, iMax, scale, shX, shY, resize, w, h, bcolor, pwidth, pcolor, xt, xmin, ymin, x1, x2, y1, y2, pen, nPen, pw, size, color, grid, colorGrid, stepGrid, sizeMenu, fromMenu, cxMenu, cyMenu, xMenu, yMenu, imenubar, margin, url, itemname, msWait, t, x3, y3, oItem, dx, dy, _iMax, _mxD, _myD, _mxM, _myM, p, match, mxU, myU, xmax, ymax, sizePinch, shWidth, shHeight, xPinch, yPinch, shAngle, moved, released, oFrame, _x1, _y1, _x2, _y2, _x3, _y3, sp, buf, rx, ry, sR, sColor, sG, sB, sHex, iR, iDec, iG, iB, rLightness, rN2, rSaturation, rN1, rH, rHue, iValue, rR, rG, rB, rMax, rMin, UNDEFINED, rRC, rGC, rBC, rV, nPalette, pltt, palette, tPalette, maxPalette, iSlider, iHue, iLightness, iSaturation, level, iRed, iGreen, iBlue, red, green, blue, iPalette, BORDERCOLOR, oRect, min, max, left, top, TOPY, caption, DELTAY, LEFTX, CAPTIONCOLOR, oNewColor, numSlider, slider, oPalette, sldr, colorInit, POPUPCOLOR, oPopup, oOK, oCancel, oCaption, oRectCurrent, oColor, cancel, TEXTCOLOR, oFilename, OPACITY, oText, fifok, oMsg, subname, typed, filename, fifos, fifoc, _shift, _ctrl, keys, shift, ctrl, key, iLen, iPtr, cmr, attr, handler, lAngle, _p, pAngle, dmu, smrc, pc, bc, pSave, tag, findNext, pTag, lTag, pAttr, lAttr, pEnd, pEq, pQ, txt, pL, pR, pKw, pStyle, kw, value, pValue, pColon, points, px, py, nPoints, pPoints, isSpace, __char, BOXCOLOR, SLITCOLOR, ox, oy, alpha, silverlight, s, fs, _cx, _cy, mag, x0, x0_, x1_, y0 As Primitive
+    Dim title, debug, gw, gh, __Not, WQ, qt, CR, LF, LT, UPPER, LOWER, DIGIT, LCHAR, TCHAR, shape, nShapes, cont, param, clicked, __in, out, c, obj, icut, icopy, ipaste, selectedshape, i, __select, shp, _x, arrow_dx, _y, arrow_dy, x, y, a, cx, cy, len, width, height, angle, mxM, myM, mxD, myD, _i, nPinch, pnch, pinch, r, nMenu, mnu, menu, func, selecteditem, mode, repeat, clipboard, index, iMin, iMax, scale, shX, shY, resize, w, h, bcolor, pwidth, pcolor, xt, xmin, ymin, x1, x2, y1, y2, pen, nPen, pw, size, color, grid, colorGrid, stepGrid, sizeMenu, fromMenu, cxMenu, cyMenu, xMenu, yMenu, imenubar, margin, url, itemname, msWait, t, x3, y3, oItem, dx, dy, _iMax, _mxD, _myD, _mxM, _myM, p, match, mxU, myU, xmax, ymax, sizePinch, shWidth, shHeight, xPinch, yPinch, shAngle, moved, released, oFrame, _x1, _y1, _x2, _y2, _x3, _y3, sp, buf, rx, ry, sR, sColor, sG, sB, sHex, iR, iDec, iG, iB, rLightness, rN2, rSaturation, rN1, rH, rHue, iValue, rR, rG, rB, rMax, rMin, UNDEFINED, rRC, rGC, rBC, rV, nPalette, pltt, palette, tPalette, maxPalette, iSlider, iHue, iLightness, iSaturation, level, iRed, iGreen, iBlue, red, green, blue, iPalette, BORDERCOLOR, oRect, min, max, left, top, TOPY, caption, DELTAY, LEFTX, CAPTIONCOLOR, oNewColor, numSlider, slider, oPalette, sldr, colorInit, POPUPCOLOR, oPopup, oOK, oCancel, oMsg, oRectCurrent, oColor, cancel, oText, oFilename, oCaption, pFilename, filename, iBackslash, iDot, basename, ext, oOpen, fifok, oSave, subname, typed, TEXTCOLOR, OPACITY, done, dummy, yes, caution, oMsgBox, oCaution, yCaution, oYes, oNo, fifos, fifoc, _shift, _ctrl, keys, shift, ctrl, key, iLen, iPtr, cmr, attr, handler, lAngle, _p, pAngle, dmu, smrc, pc, bc, pSave, tag, findNext, pTag, lTag, pAttr, lAttr, pEnd, pEq, pQ, txt, pL, pR, pKw, pStyle, kw, value, pValue, pColon, points, px, py, nPoints, pPoints, isSpace, __char, BOXCOLOR, SLITCOLOR, ox, oy, alpha, silverlight, s, fs, _cx, _cy, mag, x0, x0_, x1_, y0 As Primitive
     Sub Main()
         ' Small SVG Editor
-        ' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-        ' Version 1.97b
+        ' Copyright © 2012-2015 Nonki Takahashi.  The MIT License.
+        ' Version 1.98b
         ' Repository https://git01.codeplex.com/smallsvgeditor
-        ' Last update 2014-12-20
-        ' Program ID TLW744-6
+        ' Last update 2015-01-04
+        ' Program ID TLW744-9
         '
         ' History:
         '  - Created from Shapes 1.7b.
@@ -14,22 +14,19 @@ Module SmallSVGEditorModule
         '  - Supported SVG for Open/Save.
         '
         ' TODO:
-        '  [✔] #4 Support grouping tag (element), defs tag and use tag
-        '  [✔] #1 Change file format from .sb (.smallbasic) to .svg in ReadShapes
-        '  [✔] #11 Support rotation in ReadShapes
+        '  [ ] #17 Support relative path input
+        '  [✓] #16 Bug fix: Cannot choose color palette well
+        '  [✓] #15 Add textbox in Save dialog
+        '  [ ] #14 Redesign color palette
         '  [ ] #10 Support text tag (element)
-        '  [ ] #7 Support both .sb and .svg format in ReadShapes/WriteShapes
         '  [ ] #9 Check illegal behavior in Silverlight environment
         '  [ ] #8 Sort subroutines
-        '  [✔] #6 Bug fix: ReadShapes creates a shape cannot be moved
-        '  [✔] Bug fix: ReadShapes cannot create a triangle
-        '  [✔] #13 Bug fix: ReadShapes cannot create a shape at second time
-        '  [✔] #12 Bug fix: ReadShapes creates some of shapes cannot be moved
-        '  [ ] #2 Bug fix for Silverlight:  Lines come different place
+        '  [ ] #7 Support both .sb and .svg format in ReadShapes/WriteShapes
         '  [ ] #3 Bug fix for Silverlight:  Lines move after click
         '  [ ] #3 Bug fix for Silverlight:  Rotated triangles move after click
+        '  [ ] #2 Bug fix for Silverlight:  Lines come different place
         '
-        title = "Small SVG Editor 1.97b"
+        title = "Small SVG Editor 1.98b"
         GraphicsWindow.Title = title
         debug = false
         SB_Workaround()
@@ -98,6 +95,7 @@ Module SmallSVGEditorModule
             End If
         End While
         ' end of program
+
     End Sub
     Sub CalcDetectBorder()
         ' param i - index of shapes
@@ -209,7 +207,7 @@ Module SmallSVGEditorModule
         shp = shape(selectedshape)
         Shapes.Remove(shp("obj"))
         nShapes = nShapes - 1
-        For SmallSVGEditorModule._i = selectedshape To nShapes
+        For _i = selectedshape To nShapes
             shape(_i) = shape(_i + 1)
         Next
         shape(nShapes + 1) = ""
@@ -220,14 +218,14 @@ Module SmallSVGEditorModule
         ' return obj - name of object (menu, shape or pinch)
         Stack.PushValue("local", i)
         obj = ""
-        For SmallSVGEditorModule.i = 1 To nPinch
+        For i = 1 To nPinch
             pnch = pinch(i)
             If (pnch("_x0") <= mxD) And (mxD <= pnch("_x1")) And (pnch("_y0") <= myD) And (myD <= pnch("_y1")) Then
                 obj = "pinch" + i
-                GoTo dco_exit
+                Goto dco_exit
             End If
         Next
-        For SmallSVGEditorModule.i = nShapes To 1 Step -1
+        For i = nShapes To 1 Step -1
             shp = shape(i)
             param = "x=" + mxD + ";y=" + myD + ";width=0;height=0;"
             param("cx") = (shp("_x0") + shp("_x1")) / 2
@@ -237,14 +235,14 @@ Module SmallSVGEditorModule
             If (shp("_x0") <= x) And (x <= shp("_x1")) And (shp("_y0") <= y) And (y <= shp("_y1")) Then
                 If (shp("func") = CType("rect", Primitive)) Or (shp("func") = CType("line", Primitive)) Then
                     obj = "shape" + i
-                    GoTo dco_exit
+                    Goto dco_exit
                 ElseIf shp("func") = CType("ell", Primitive) Then
                     x = (x - param("cx")) / shp("width") * 2
                     y = (y - param("cy")) / shp("height") * 2
                     r = Microsoft.SmallBasic.Library.Math.SquareRoot((x * x) + (y * y))
                     If r <= 1 Then
                         obj = "shape" + i
-                        GoTo dco_exit
+                        Goto dco_exit
                     End If
                 ElseIf shp("func") = CType("tri", Primitive) Then
                     x = (x - param("cx")) / shp("width") * 2
@@ -252,16 +250,16 @@ Module SmallSVGEditorModule
                     r = Microsoft.SmallBasic.Library.Math.Abs(x) + Microsoft.SmallBasic.Library.Math.Abs(y)
                     If (r <= 1) And (y <= 0) Then
                         obj = "shape" + i
-                        GoTo dco_exit
+                        Goto dco_exit
                     End If
                 End If
             End If
         Next
-        For SmallSVGEditorModule.i = 1 To nMenu
+        For i = 1 To nMenu
             mnu = menu(i)
             If (mnu("func") <> CType("", Primitive)) And (mnu("_x0") <= mxD) And (mxD <= mnu("_x1")) And (mnu("_y0") <= myD) And (myD <= mnu("_y1")) Then
                 obj = "menu" + i
-                GoTo dco_exit
+                Goto dco_exit
             End If
         Next
 dco_exit:
@@ -315,7 +313,7 @@ dco_exit:
                 If selectedshape <> CType("", Primitive) Then
                     clipboard = shape(selectedshape)
                     index = "1=x;2=y;3=_x0;4=_x1;5=_y0;6=_y1;"
-                    For SmallSVGEditorModule._i = 1 To 6
+                    For _i = 1 To 6
                         clipboard(index(_i)) = clipboard(index(_i)) + 10
                     Next
                 End If
@@ -324,7 +322,7 @@ dco_exit:
                     nShapes = nShapes + 1
                     shape(nShapes) = clipboard
                     index = "1=x;2=y;3=_x0;4=_x1;5=_y0;6=_y1;"
-                    For SmallSVGEditorModule._i = 1 To 6
+                    For _i = 1 To 6
                         clipboard(index(_i)) = clipboard(index(_i)) + 10
                     Next
                     iMin = nShapes
@@ -561,10 +559,10 @@ dm_exit:
         ' param stepGrid - step for grid
         GraphicsWindow.PenWidth = 1
         GraphicsWindow.PenColor = colorGrid
-        For SmallSVGEditorModule.x = 0 To gw - 1 Step stepGrid
+        For x = 0 To gw - 1 Step stepGrid
             GraphicsWindow.DrawLine(x, sizeMenu + 20, x, gh)
         Next
-        For SmallSVGEditorModule.y = sizeMenu + 20 To gh - 1 Step stepGrid
+        For y = sizeMenu + 20 To gh - 1 Step stepGrid
             GraphicsWindow.DrawLine(0, y, gw, y)
         Next
     End Sub
@@ -581,7 +579,7 @@ dm_exit:
         pw = "1=2;2=4;3=8;4=16;5=0;6=1;" ' pen width
         pen = 1 ' pen width index
         nPen = 6 ' number of pen width
-        For SmallSVGEditorModule.i = 1 To nMenu
+        For i = 1 To nMenu
             xMenu = cxMenu + (Microsoft.SmallBasic.Library.Math.Floor((i - 1) / 1) * (sizeMenu + 4))
             yMenu = cyMenu + (Microsoft.SmallBasic.Library.Math.Remainder(i - 1, 1) * (sizeMenu + 14))
             GraphicsWindow.BrushColor = "#EEEEEE"
@@ -644,7 +642,7 @@ dm_exit:
             Shapes_Move()
             x = x - 14
             iMax = 3
-            For SmallSVGEditorModule.t = 0 To 360 * 0.3
+            For t = 0 To 360 * 0.3
                 angle = 30 - (30 * Microsoft.SmallBasic.Library.Math.Cos(t * Microsoft.SmallBasic.Library.Math.Pi / 180))
                 Shapes_Rotate()
             Next
@@ -727,10 +725,10 @@ dm_exit:
             mnu("func") = "gr"
             GraphicsWindow.PenColor = "#AAAAAA"
             GraphicsWindow.PenWidth = 1
-            For SmallSVGEditorModule._x = x + margin To x + size - margin Step (size - (margin * 2)) / 4
+            For _x = x + margin To x + size - margin Step (size - (margin * 2)) / 4
                 GraphicsWindow.DrawLine(_x, y + margin, _x, y + size - margin)
             Next
-            For SmallSVGEditorModule._y = y + margin To y + size - margin Step (size - (margin * 2)) / 4
+            For _y = y + margin To y + size - margin Step (size - (margin * 2)) / 4
                 GraphicsWindow.DrawLine(x + margin, _y, x + size - margin, _y)
             Next
             itemname(i) = "Grid"
@@ -747,7 +745,7 @@ dm_exit:
     Sub DumpShape()
         TextWindow.WriteLine("shX=" + shX)
         TextWindow.WriteLine("shY=" + shY)
-        For SmallSVGEditorModule.i = 1 To nShapes
+        For i = 1 To nShapes
             TextWindow.WriteLine("shape[" + i + "]:" + shape(i))
         Next
     End Sub
@@ -788,7 +786,7 @@ dm_exit:
         Else
             _iMax = 5
         End If
-        For SmallSVGEditorModule._i = 1 To _iMax
+        For _i = 1 To _iMax
             pnch = pinch(_i)
             pnch("_x0") = pnch("_x0") + dx
             pnch("_x1") = pnch("_x1") + dx
@@ -957,7 +955,7 @@ dm_exit:
             GraphicsWindow.BrushColor = "Lime"
             If shp("func") = CType("line", Primitive) Then
                 nPinch = 2
-                For SmallSVGEditorModule._i = 1 To nPinch
+                For _i = 1 To nPinch
                     pnch = pinch(_i)
                     pnch("obj") = Shapes.AddEllipse(sizePinch, sizePinch)
                     x = shX + shp("x" + _i) - (sizePinch / 2)
@@ -992,7 +990,7 @@ dm_exit:
                 xPinch = "1=0;2=" + shWidth + ";3=0;4=" + shWidth + ";"
                 yPinch = "1=0;2=0;3=" + shHeight + ";4=" + shHeight + ";"
                 GraphicsWindow.BrushColor = "#639AE7"
-                For SmallSVGEditorModule._i = 1 To 4
+                For _i = 1 To 4
                     pnch = pinch(_i)
                     pnch("obj") = Shapes.AddEllipse(sizePinch, sizePinch)
                     param("x") = shX + xPinch(_i) - (sizePinch / 2)
@@ -1011,7 +1009,7 @@ dm_exit:
             x = Stack.PopValue("local")
         Else
             selectedshape = ""
-            For SmallSVGEditorModule._i = 1 To nPinch
+            For _i = 1 To nPinch
                 pnch = pinch(_i)
                 Shapes.Remove(pnch("obj"))
             Next
@@ -1227,7 +1225,7 @@ dm_exit:
             xmax = shp("x")
             ymax = shp("y")
         End If
-        For SmallSVGEditorModule.i = 2 To nShapes
+        For i = 2 To nShapes
             shp = shape(i)
             If shp("x") < xmin Then
                 xmin = shp("x")
@@ -1242,7 +1240,7 @@ dm_exit:
                 ymax = shp("y")
             End If
         Next
-        For SmallSVGEditorModule.i = 1 To nShapes
+        For i = 1 To nShapes
             shp = shape(i)
             If shp("func") = CType("rect", Primitive) Then
                 buf = buf + sp(6) + LT + "rect "
@@ -1337,7 +1335,7 @@ dm_exit:
         ' param rSaturation - [0, 1]
         ' return iR, iG, iB - RGB color
         ' return sColor - "#rrggbb"
-        If rLightness <= CType(0.5, Primitive) Then
+        If rLightness <= 0.5 Then
             rN2 = rLightness * (1 + rSaturation)
         Else
             rN2 = rLightness + rSaturation - (rLightness * rSaturation)
@@ -1382,7 +1380,7 @@ dm_exit:
             rSaturation = 0
             rHue = UNDEFINED
         Else
-            If rLightness <= CType(0.5, Primitive) Then
+            If rLightness <= 0.5 Then
                 rSaturation = (rMax - rMin) / (rMax + rMin)
             Else
                 rSaturation = (rMax - rMin) / (2 - rMax - rMin)
@@ -1439,10 +1437,10 @@ dm_exit:
         ' param palette
         ' param tPalette - target palette
         Stack.PushValue("local", i)
-        For SmallSVGEditorModule.i = 1 To nPalette
+        For i = 1 To nPalette
             pltt = palette(i)
             If color = pltt("color") Then
-                GoTo csactp_not_new_color
+                Goto csactp_not_new_color
             End If
         Next
         pltt = palette(tPalette)
@@ -1559,7 +1557,7 @@ csactp_not_new_color:
         ' return oPalette[] - palette object array
         Stack.PushValue("local", i)
         GraphicsWindow.PenColor = BORDERCOLOR
-        For SmallSVGEditorModule.i = 1 To nPalette
+        For i = 1 To nPalette
             pltt = palette(i)
             GraphicsWindow.BrushColor = pltt("color")
             pltt("oCell") = Shapes.AddRectangle(width, height)
@@ -1648,7 +1646,7 @@ csactp_not_new_color:
     End Sub
     Sub CS_DumpSlider()
         ' Color Selector | Dump slider for debug
-        For SmallSVGEditorModule.i = 1 To numSlider
+        For i = 1 To numSlider
             TextWindow.WriteLine("slider" + i)
             TextWindow.WriteLine(slider(i))
         Next
@@ -1679,7 +1677,7 @@ csactp_not_new_color:
         ' param nPalette - number of color in palette
         ' return oPalette[] - palette object array
         Stack.PushValue("local", i)
-        For SmallSVGEditorModule.i = 1 To nPalette
+        For i = 1 To nPalette
             oPalette = "Palette" + i
             pltt = palette(i)
             Shapes.Remove(pltt("oCell"))
@@ -1688,7 +1686,7 @@ csactp_not_new_color:
     End Sub
     Sub CS_RemoveSliders()
         ' Color Selector | Remove sliders
-        For SmallSVGEditorModule.iSlider = 1 To numSlider
+        For iSlider = 1 To numSlider
             Slider_Remove()
         Next
         numSlider = 0
@@ -1700,7 +1698,7 @@ csactp_not_new_color:
         ' return iSlider - index if obj is slider
         ' return iPalette - index if obj is palette
         Stack.PushValue("local", i)
-        For SmallSVGEditorModule.iSlider = 1 To numSlider
+        For iSlider = 1 To numSlider
             obj = "slider" + iSlider
             sldr = slider(iSlider)
             x2 = sldr("x2")
@@ -1708,10 +1706,10 @@ csactp_not_new_color:
             x3 = sldr("x3")
             y3 = sldr("y3")
             If (x2 <= mxD) And (mxD <= x3) And (y2 <= myD) And (myD <= y3) Then
-                GoTo scco_obj_found
+                Goto scco_obj_found
             End If
         Next
-        For SmallSVGEditorModule.iPalette = 1 To nPalette
+        For iPalette = 1 To nPalette
             obj = "palette" + iPalette
             pltt = palette(iPalette)
             x2 = pltt("x")
@@ -1719,7 +1717,7 @@ csactp_not_new_color:
             x3 = pltt("x") + pltt("width")
             y3 = pltt("y") + pltt("height")
             If (x2 <= mxD) And (mxD <= x3) And (y2 <= myD) And (myD <= y3) Then
-                GoTo scco_obj_found
+                Goto scco_obj_found
             End If
         Next
         obj = ""
@@ -1774,19 +1772,12 @@ scco_obj_found:
         CS_DrawColorRect() ' original color
         oRectCurrent = oRect
         oRect = "" ' keep current color
-        'GraphicsWindow.SetPixel(0, 0, colorInit)
-        'color = GraphicsWindow.GetPixel(0, 0)
         If Text.GetLength(color) = 9 Then ' for Silverlight
             color = "#" + Text.GetSubText(color, 4, 6)
         End If
-        'GraphicsWindow.SetPixel(0, 0, "LightGray")
         GraphicsWindow.BrushColor = CAPTIONCOLOR
         oColor = Shapes.AddText(colorInit)
         Shapes.Move(oColor, x, y + height + 2)
-        'If color <> colorInit Then
-        '  oColor2 = Shapes.AddText(color)
-        '  Shapes.Move(oColor2, x, y + height + 14)
-        'EndIf
         y = Stack.PopValue("local")
         CS_SetColorToSlider()
         CS_DrawColorRect() ' draw new color rectangle
@@ -1842,9 +1833,78 @@ scco_obj_found:
             cancel = false
         End If
     End Sub
+    Sub File_CloseDialog()
+        ' File | Close dialog for Open/Save
+        ' param oPopup
+        ' param oCaption
+        ' param oFilename
+        ' param oText
+        ' param oMsg
+        ' param oCancel
+        Controls.Remove(oCancel)
+        Controls.Remove(oMsg)
+        Controls.Remove(oText)
+        Controls.Remove(oFilename)
+        Controls.Remove(oCaption)
+        Controls.Remove(oPopup)
+    End Sub
+    Sub File_GetBasename()
+        ' FIle | Get basename from filename
+        ' param filename
+        ' return basename
+        ' return ext - extension
+        pFilename = 1
+        While Text.IsSubText(Text.GetSubTextToEnd(filename, pFilename), "\")
+            iBackslash = Text.GetIndexOf(Text.GetSubTextToEnd(filename, pFilename), "\")
+            pFilename = pFilename + iBackslash
+        End While
+        iDot = Text.GetIndexOf(Text.GetSubTextToEnd(filename, pFilename), ".")
+        basename = Text.GetSubText(filename, pFilename, iDot - 1)
+        ext = Text.GetSubTextToEnd(filename, pFilename + iDot)
+    End Sub
     Sub File_Open()
-        ' File | Show output program to save
+        ' File | Show input code to open
+        ' return buf
         Stack.PushValue("local", cont)
+        File_OpenDialog()
+        oOpen = Controls.AddButton("Open", 486, gh - 34)
+        Shapes.SetText(oMsg, "You can also click above, push Ctrl+V to paste from clipboard")
+        AddHandler Controls.ButtonClicked, AddressOf File_OnButtonClicked
+        AddHandler Controls.TextTyped, AddressOf File_OnTextTyped
+        subname = "Shapes_Init"
+        typed = false
+        cont = true ' continue
+        While cont
+            If typed Then
+                filename = Controls.GetTextBoxText(oFilename)
+                If __Not(Text.IsSubText(filename, ":")) And __Not(Text.StartsWith(filename, "\")) Then
+                    filename = Program.Directory + "\" + filename
+                End If
+                buf = ""
+                buf = File.ReadContents(filename)
+                Controls.SetTextBoxText(oText, buf)
+                typed = false
+            Else
+                Program.Delay(200)
+            End If
+        End While
+        If Controls.LastClickedButton = oOpen Then
+            buf = Controls.GetTextBoxText(oText)
+        Else
+            buf = ""
+        End If
+        Controls.Remove(oOpen)
+        File_CloseDialog()
+        cont = Stack.PopValue("local")
+    End Sub
+    Sub File_OpenDialog()
+        ' File | Open dialog and common parts for Open/Save
+        ' return oPopup
+        ' return oCaption
+        ' return oFilename
+        ' return oText
+        ' return oMsg
+        ' return oCancel
         GraphicsWindow.PenWidth = 0
         GraphicsWindow.BrushColor = POPUPCOLOR
         oPopup = Shapes.AddRectangle(gw, gh)
@@ -1860,33 +1920,11 @@ scco_obj_found:
         oText = Controls.AddMultiLineTextBox(LEFTX, TOPY + 30)
         Controls.SetSize(oText, gw - 20, gh - 84)
         Shapes.SetOpacity(oText, OPACITY)
-        oOK = Controls.AddButton("OK", gw - 40, gh - 34)
-        AddHandler Controls.ButtonClicked, AddressOf File_OnButtonClicked
-        AddHandler Controls.TextTyped, AddressOf File_OnTextTyped
-        subname = "Shapes_Init"
-        typed = false
-        cont = true ' continue
-        While cont
-            If typed Then
-                filename = Controls.GetTextBoxText(oFilename)
-                If __Not(Text.IsSubText(filename, ":")) And __Not(Text.IsSubText(filename, "\")) Then
-                    filename = Program.Directory + "\" + filename
-                End If
-                buf = ""
-                buf = File.ReadContents(filename)
-                Controls.SetTextBoxText(oText, buf)
-                typed = false
-            Else
-                Program.Delay(200)
-            End If
-        End While
-        buf = Controls.GetTextBoxText(oText)
-        Controls.Remove(oCaption)
-        Controls.Remove(oFilename)
-        Controls.Remove(oText)
-        Controls.Remove(oOK)
-        Controls.Remove(oPopup)
-        cont = Stack.PopValue("local")
+        GraphicsWindow.BrushColor = CAPTIONCOLOR
+        oMsg = Shapes.AddText("")
+        Shapes.Move(oMsg, LEFTX, gh - 28)
+        GraphicsWindow.BrushColor = TEXTCOLOR
+        oCancel = Controls.AddButton("Cancel", 535, gh - 34)
     End Sub
     Sub File_OnTextTyped()
         ' File | Textbox event handler
@@ -1895,33 +1933,63 @@ scco_obj_found:
         End If
     End Sub
     Sub File_Save()
-        ' File | Show output program to save
+        ' File | Show output code to save
         ' param buf - program buffer
-        ' define constant
         Stack.PushValue("local", cont)
-        GraphicsWindow.PenWidth = 0
-        GraphicsWindow.BrushColor = POPUPCOLOR
-        oPopup = Shapes.AddRectangle(gw, gh)
-        Shapes.SetOpacity(oPopup, OPACITY)
-        Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
-        GraphicsWindow.BrushColor = TEXTCOLOR
-        oText = Controls.AddMultiLineTextBox(LEFTX, TOPY)
-        Controls.SetSize(oText, gw - 20, gh - 50)
-        Shapes.SetOpacity(oText, OPACITY)
+        File_OpenDialog()
         Controls.SetTextBoxText(oText, buf)
-        oOK = Controls.AddButton("OK", gw - 40, gh - 34)
-        GraphicsWindow.BrushColor = CAPTIONCOLOR
-        oMsg = Shapes.AddText("Click textbox above, push Ctrl+A, Ctrl+C to copy and save to your editor")
-        Shapes.Move(oMsg, LEFTX, gh - 28)
-        cont = true ' continue
+        oSave = Controls.AddButton("Save", 488, gh - 34)
+        Shapes.SetText(oMsg, "You can also click above, push Ctrl+A, Ctrl+C to copy to clipboard")
         AddHandler Controls.ButtonClicked, AddressOf File_OnButtonClicked
-        While cont
-            Program.Delay(500)
+        done = false
+        While __Not(done)
+            cont = true ' continue
+            While cont
+                Program.Delay(500)
+            End While
+            buf = Controls.GetTextBoxText(oText)
+            filename = Controls.GetTextBoxText(oFilename)
+            If (filename <> CType("", Primitive)) And __Not(Text.IsSubText(filename, ":")) And __Not(Text.StartsWith(filename, "\")) Then
+                filename = Program.Directory + "\" + filename
+            End If
+            If (Controls.LastClickedButton = oSave) And (filename <> CType("", Primitive)) Then
+                dummy = File.ReadContents(filename)
+                yes = true
+                If dummy <> CType("", Primitive) Then
+                    File_GetBasename()
+                    caution = "'" + basename + "." + ext + "' already exists." + CR + LF + "Do you want to replace it?"
+                    GraphicsWindow.BrushColor = POPUPCOLOR
+                    oMsgBox = Shapes.AddRectangle(gw, gh)
+                    Shapes.SetOpacity(oMsgBox, 64)
+                    GraphicsWindow.BrushColor = CAPTIONCOLOR
+                    oCaution = Shapes.AddText(caution)
+                    yCaution = (gh - 80) / 2
+                    Shapes.Move(oCaution, 150, yCaution)
+                    oYes = Controls.AddButton("Yes", 360, yCaution + 50)
+                    oNo = Controls.AddButton("No", 400, yCaution + 50)
+                    cont = true ' continue
+                    AddHandler Controls.ButtonClicked, AddressOf File_OnButtonClicked
+                    While cont
+                        Program.Delay(500)
+                    End While
+                    If Controls.LastClickedButton = oNo Then
+                        yes = false
+                    End If
+                    Controls.Remove(oNo)
+                    Controls.Remove(oYes)
+                    Shapes.Remove(oCaution)
+                    Shapes.Remove(oMsgBox)
+                End If
+                If yes Then
+                    File.WriteContents(filename, buf)
+                    done = true ' saved
+                End If
+            Else
+                done = true ' cancelled
+            End If
         End While
-        Controls.Remove(oText)
-        Controls.Remove(oMsg)
-        Controls.Remove(oOK)
-        Controls.Remove(oPopup)
+        Controls.Remove(oSave)
+        File_CloseDialog()
         cont = Stack.PopValue("local")
     End Sub
     Sub File_OnButtonClicked()
@@ -1930,7 +1998,7 @@ scco_obj_found:
     End Sub
     Sub KB_FlushFIFO()
         ' Keyborad | Flush keyboard buffer (FIFO)
-        For SmallSVGEditorModule.out = out + 1 To __in
+        For out = out + 1 To __in
             fifok(out) = ""
             fifos(out) = ""
             fifoc(out) = ""
@@ -2019,7 +2087,7 @@ scco_obj_found:
         ' return iDec
         iDec = 0
         iLen = Text.GetLength(sHex)
-        For SmallSVGEditorModule.iPtr = 1 To iLen
+        For iPtr = 1 To iLen
             iDec = (iDec * 16) + Text.GetIndexOf("0123456789ABCDEF", Text.GetSubText(sHex, iPtr, 1)) - 1
         Next
     End Sub
@@ -2341,7 +2409,7 @@ scco_obj_found:
         px = ""
         py = ""
         nPoints = 1
-        For SmallSVGEditorModule.pPoints = 1 To len
+        For pPoints = 1 To len
             c = Text.GetSubText(points, pPoints, 1)
             While (pPoints <= len) And Text.IsSubText(DIGIT, c)
                 px(nPoints) = Text.Append(px(nPoints), c)
@@ -2422,10 +2490,10 @@ scco_obj_found:
         pStyle = 1
         kw = "fill"
         Parse_GetStyleAttr()
-        bc = value
+        bc = Text.ConvertToUpperCase(value)
         kw = "stroke"
         Parse_GetStyleAttr()
-        pc = value
+        pc = Text.ConvertToUpperCase(value)
         kw = "stroke-width"
         Parse_GetStyleAttr()
         pw = value
@@ -2493,7 +2561,7 @@ scco_obj_found:
         Parse_GetAttrAndText()
         shX = 0
         shY = 0
-        For SmallSVGEditorModule.i = iMin To iMax
+        For i = iMin To iMax
             shp = shape(i)
             shp("x") = shp("x") + attr("x")
             shp("y") = shp("y") + attr("y")
@@ -2520,7 +2588,7 @@ scco_obj_found:
     End Sub
     Sub DumpBuf()
         If sp(10) = CType("", Primitive) Then
-            For SmallSVGEditorModule.i = 1 To 10
+            For i = 1 To 10
                 sp(10) = sp(10) + " "
             Next
         End If
@@ -2596,7 +2664,7 @@ scco_obj_found:
         Stack.PushValue("local", y)
         Shapes_CalcWidthAndHeight()
         s = scale
-        For SmallSVGEditorModule.i = iMin To iMax
+        For i = iMin To iMax
             shp = shape(i)
             GraphicsWindow.PenWidth = shp("pw") * s
             If shp("pw") > 0 Then
@@ -2668,7 +2736,7 @@ scco_obj_found:
         ' Shapes | Calculate total width and height of shapes
         ' param iMin, iMax - shape indices to add
         ' return shWidth, shHeight - total size of shapes
-        For SmallSVGEditorModule.i = iMin To iMax
+        For i = iMin To iMax
             shp = shape(i)
             If (shp("func") = CType("tri", Primitive)) Or (shp("func") = CType("line", Primitive)) Then
                 xmin = shp("x1")
@@ -2729,7 +2797,7 @@ scco_obj_found:
         s = scale
         shX = x
         shY = y
-        For SmallSVGEditorModule.i = iMin To iMax
+        For i = iMin To iMax
             shp = shape(i)
             If silverlight And Text.IsSubText("tri|line", shp("func")) Then
                 _x = shp("wx")
@@ -2747,7 +2815,7 @@ scco_obj_found:
         ' param iMin, iMax - shapes indices to remove
         ' param shape - array of shapes
         Stack.PushValue("local", i)
-        For SmallSVGEditorModule.i = iMin To iMax
+        For i = iMin To iMax
             shp = shape(i)
             Shapes.Remove(shp("obj"))
         Next
@@ -2766,7 +2834,7 @@ scco_obj_found:
         param("angle") = angle
         param("cx") = shWidth / 2
         param("cy") = shHeight / 2
-        For SmallSVGEditorModule.i = iMin To iMax
+        For i = iMin To iMax
             shp = shape(i)
             param("x") = shp("x")
             param("y") = shp("y")
@@ -2777,7 +2845,7 @@ scco_obj_found:
             shp("ry") = y
             If silverlight And Text.IsSubText("tri|line", shp("func")) Then
                 alpha = Microsoft.SmallBasic.Library.Math.GetRadians(angle + shp("angle"))
-                SB_RotateWorkaround()
+                SB_RotateWorkAround()
                 shp("wx") = x
                 shp("wy") = y
             End If

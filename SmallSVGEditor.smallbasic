@@ -1,9 +1,9 @@
 ' Small SVG Editor
-' Copyright © 2012-2014 Nonki Takahashi.  The MIT License.
-' Version 1.97b
+' Copyright © 2012-2015 Nonki Takahashi.  The MIT License.
+' Version 1.98b
 ' Repository https://git01.codeplex.com/smallsvgeditor
-' Last update 2014-12-20
-' Program ID TLW744-6
+' Last update 2015-01-04
+' Program ID TLW744-9
 '
 ' History:
 '  - Created from Shapes 1.7b.
@@ -11,22 +11,19 @@
 '  - Supported SVG for Open/Save.
 '
 ' TODO:
-'  [✔] #4 Support grouping tag (element), defs tag and use tag
-'  [✔] #1 Change file format from .sb (.smallbasic) to .svg in ReadShapes
-'  [✔] #11 Support rotation in ReadShapes
+'  [ ] #17 Support relative path input
+'  [✓] #16 Bug fix: Cannot choose color palette well
+'  [✓] #15 Add textbox in Save dialog
+'  [ ] #14 Redesign color palette
 '  [ ] #10 Support text tag (element)
-'  [ ] #7 Support both .sb and .svg format in ReadShapes/WriteShapes
 '  [ ] #9 Check illegal behavior in Silverlight environment
 '  [ ] #8 Sort subroutines
-'  [✔] #6 Bug fix: ReadShapes creates a shape cannot be moved
-'  [✔] Bug fix: ReadShapes cannot create a triangle
-'  [✔] #13 Bug fix: ReadShapes cannot create a shape at second time
-'  [✔] #12 Bug fix: ReadShapes creates some of shapes cannot be moved
-'  [ ] #2 Bug fix for Silverlight:  Lines come different place
+'  [ ] #7 Support both .sb and .svg format in ReadShapes/WriteShapes
 '  [ ] #3 Bug fix for Silverlight:  Lines move after click
 '  [ ] #3 Bug fix for Silverlight:  Rotated triangles move after click
+'  [ ] #2 Bug fix for Silverlight:  Lines come different place
 '
-title = "Small SVG Editor 1.97b"
+title = "Small SVG Editor 1.98b"
 GraphicsWindow.Title = title
 debug = "False"
 SB_Workaround()
@@ -1770,19 +1767,12 @@ Sub CS_ShowPopup
   CS_DrawColorRect()    ' original color
   oRectCurrent = oRect
   oRect = ""            ' keep current color
-  'GraphicsWindow.SetPixel(0, 0, colorInit)
-  'color = GraphicsWindow.GetPixel(0, 0)
   If Text.GetLength(color) = 9 Then       ' for Silverlight
     color = "#" + Text.GetSubText(color, 4, 6)
   EndIf
-  'GraphicsWindow.SetPixel(0, 0, "LightGray")
   GraphicsWindow.BrushColor = CAPTIONCOLOR
   oColor = Shapes.AddText(colorInit)
   Shapes.Move(oColor, x, y + height + 2)
-  'If color <> colorInit Then
-  '  oColor2 = Shapes.AddText(color)
-  '  Shapes.Move(oColor2, x, y + height + 14)
-  'EndIf
   y = Stack.PopValue("local")
   CS_SetColorToSlider()
   CS_DrawColorRect()      ' draw new color rectangle
@@ -1838,9 +1828,78 @@ Sub CS_OnButtonClicked
     cancel = "False"
   EndIf
 EndSub
+Sub File_CloseDialog
+  ' File | Close dialog for Open/Save
+  ' param oPopup
+  ' param oCaption
+  ' param oFilename
+  ' param oText
+  ' param oMsg
+  ' param oCancel
+  Controls.Remove(oCancel)
+  Controls.Remove(oMsg)
+  Controls.Remove(oText)
+  Controls.Remove(oFilename)
+  Controls.Remove(oCaption)
+  Controls.Remove(oPopup)
+EndSub
+Sub File_GetBasename
+  ' FIle | Get basename from filename
+  ' param filename
+  ' return basename
+  ' return ext - extension
+  pFilename = 1
+  While Text.IsSubText(Text.GetSubTextToEnd(filename, pFilename), "\")
+    iBackslash = Text.GetIndexOf(Text.GetSubTextToEnd(filename, pFilename), "\")
+    pFilename = pFilename + iBackslash
+  EndWhile
+  iDot = Text.GetIndexOf(Text.GetSubTextToEnd(filename, pFilename), ".")
+  basename = Text.GetSubText(filename, pFilename, iDot - 1)
+  ext = Text.GetSubTextToEnd(filename, pFilename + iDot)
+EndSub
 Sub File_Open
-  ' File | Show output program to save
+  ' File | Show input code to open
+  ' return buf
   Stack.PushValue("local", cont)
+  File_OpenDialog()
+  oOpen = Controls.AddButton("Open", 486, gh - 34)
+  Shapes.SetText(oMsg, "You can also click above, push Ctrl+V to paste from clipboard")
+  Controls.ButtonClicked = File_OnButtonClicked
+  Controls.TextTyped = File_OnTextTyped
+  subname = "Shapes_Init"
+  typed = "False"
+  cont = "True"         ' continue
+  While cont
+    If typed Then
+      filename = Controls.GetTextBoxText(oFilename)
+      If Not[Text.IsSubText(filename, ":")] And Not[Text.StartsWith(filename, "\")] Then
+        filename = Program.Directory + "\" + filename
+      EndIf
+      buf = ""
+      buf = File.ReadContents(filename)
+      Controls.SetTextBoxText(oText, buf)
+      typed = "False"
+    Else
+      Program.Delay(200)
+    EndIf
+  EndWhile
+  If Controls.LastClickedButton = oOpen Then
+    buf = Controls.GetTextBoxText(oText)
+  Else
+    buf = ""
+  EndIf
+  Controls.Remove(oOpen)
+  File_CloseDialog()
+  cont = Stack.PopValue("local")
+EndSub
+Sub File_OpenDialog
+  ' File | Open dialog and common parts for Open/Save
+  ' return oPopup
+  ' return oCaption
+  ' return oFilename
+  ' return oText
+  ' return oMsg
+  ' return oCancel
   GraphicsWindow.PenWidth = 0
   GraphicsWindow.BrushColor = POPUPCOLOR
   oPopup = Shapes.AddRectangle(gw, gh)
@@ -1856,33 +1915,11 @@ Sub File_Open
   oText = Controls.AddMultiLineTextBox(LEFTX, TOPY + 30)
   Controls.SetSize(oText, gw - 20, gh - 84)
   Shapes.SetOpacity(oText, OPACITY)
-  oOK = Controls.AddButton("OK", gw - 40, gh - 34)
-  Controls.ButtonClicked = File_OnButtonClicked
-  Controls.TextTyped = File_OnTextTyped
-  subname = "Shapes_Init"
-  typed = "False"
-  cont = "True"         ' continue
-  While cont
-    If typed Then
-      filename = Controls.GetTextBoxText(oFilename)
-      If Not[Text.IsSubText(filename, ":")] And Not[Text.IsSubText(filename, "\")] Then
-        filename = Program.Directory + "\" + filename
-      EndIf
-      buf = ""
-      buf = File.ReadContents(filename)
-      Controls.SetTextBoxText(oText, buf)
-      typed = "False"
-    Else
-      Program.Delay(200)
-    EndIf
-  EndWhile
-  buf = Controls.GetTextBoxText(oText)
-  Controls.Remove(oCaption)
-  Controls.Remove(oFilename)
-  Controls.Remove(oText)
-  Controls.Remove(oOK)
-  Controls.Remove(oPopup)
-  cont = Stack.PopValue("local")
+  GraphicsWindow.BrushColor = CAPTIONCOLOR
+  oMsg = Shapes.AddText("")
+  Shapes.Move(oMsg, LEFTX, gh - 28)
+  GraphicsWindow.BrushColor = TEXTCOLOR
+  oCancel = Controls.AddButton("Cancel", 535, gh - 34)
 EndSub
 Sub File_OnTextTyped
   ' File | Textbox event handler
@@ -1891,33 +1928,63 @@ Sub File_OnTextTyped
   EndIf
 EndSub
 Sub File_Save
-  ' File | Show output program to save
+  ' File | Show output code to save
   ' param buf - program buffer
-  ' define constant
   Stack.PushValue("local", cont)
-  GraphicsWindow.PenWidth = 0
-  GraphicsWindow.BrushColor = POPUPCOLOR
-  oPopup = Shapes.AddRectangle(gw, gh)
-  Shapes.SetOpacity(oPopup, OPACITY)
-  Shapes.Move(oPopup, LEFTX - 10, TOPY - 10)
-  GraphicsWindow.BrushColor = TEXTCOLOR
-  oText = Controls.AddMultiLineTextBox(LEFTX, TOPY)
-  Controls.SetSize(oText, gw - 20, gh - 50)
-  Shapes.SetOpacity(oText, OPACITY)
+  File_OpenDialog()
   Controls.SetTextBoxText(oText, buf)
-  oOK = Controls.AddButton("OK", gw - 40, gh - 34)
-  GraphicsWindow.BrushColor = CAPTIONCOLOR
-  oMsg = Shapes.AddText("Click textbox above, push Ctrl+A, Ctrl+C to copy and save to your editor")
-  Shapes.Move(oMsg, LEFTX, gh - 28)
-  cont = "True"         ' continue
+  oSave = Controls.AddButton("Save", 488, gh - 34)
+  Shapes.SetText(oMsg, "You can also click above, push Ctrl+A, Ctrl+C to copy to clipboard")
   Controls.ButtonClicked = File_OnButtonClicked
-  While cont
-    Program.Delay(500)
+  done = "False"
+  While Not[done]
+    cont = "True"         ' continue
+    While cont
+      Program.Delay(500)
+    EndWhile
+    buf = Controls.GetTextBoxText(oText)
+    filename = Controls.GetTextBoxText(oFilename)
+    If (filename <> "") And Not[Text.IsSubText(filename, ":")] And Not[Text.StartsWith(filename, "\")] Then
+      filename = Program.Directory + "\" + filename
+    EndIf
+    If (Controls.LastClickedButton = oSave) And (filename <> "") Then
+      dummy = File.ReadContents(filename)
+      yes = "True"
+      If dummy <> "" Then
+        File_GetBasename()
+        caution = "'" + basename + "." +  ext + "' already exists." + CR + LF + "Do you want to replace it?"
+        GraphicsWindow.BrushColor = POPUPCOLOR
+        oMsgBox = Shapes.AddRectangle(gw, gh)
+        Shapes.SetOpacity(oMsgBox, 64)
+        GraphicsWindow.BrushColor = CAPTIONCOLOR
+        oCaution = Shapes.AddText(caution)
+        yCaution = (gh - 80) / 2
+        Shapes.Move(oCaution, 150, yCaution)
+        oYes = Controls.AddButton("Yes", 360, yCaution + 50)
+        oNo = Controls.AddButton("No", 400, yCaution + 50)
+        cont = "True"         ' continue
+        Controls.ButtonClicked = File_OnButtonClicked
+        While cont
+          Program.Delay(500)
+        EndWhile
+        If Controls.LastClickedButton = oNo Then
+          yes = "False"
+        EndIf
+        Controls.Remove(oNo)
+        Controls.Remove(oYes)
+        Shapes.Remove(oCaution)
+        Shapes.Remove(oMsgBox)
+      EndIf
+      If yes Then
+        File.WriteContents(filename, buf)
+        done = "True" ' saved
+      EndIf
+    Else
+      done = "True"   ' cancelled
+    EndIf
   EndWhile
-  Controls.Remove(oText)
-  Controls.Remove(oMsg)
-  Controls.Remove(oOK)
-  Controls.Remove(oPopup)
+  Controls.Remove(oSave)
+  File_CloseDialog()
   cont = Stack.PopValue("local")
 EndSub
 Sub File_OnButtonClicked
@@ -2418,10 +2485,10 @@ Sub Parse_SetStyle
   pStyle = 1
   kw = "fill"
   Parse_GetStyleAttr()
-  bc = value
+  bc = Text.ConvertToUpperCase(value)
   kw = "stroke"
   Parse_GetStyleAttr()
-  pc = value
+  pc = Text.ConvertToUpperCase(value)
   kw = "stroke-width"
   Parse_GetStyleAttr()
   pw = value
@@ -2913,3 +2980,4 @@ Sub Slider_SetLevel
   slider[iSlider] = sldr
   width = Stack.PopValue("local")
 EndSub
+  
